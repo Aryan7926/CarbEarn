@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Activity — CarbEarn</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+    <header class="navbar">
+        <a href="dashboard.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn
+        </a>
+        <nav class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="activities.html" class="active">Activities</a>
+            <a href="history.html">History</a>
+            <a href="greenproof.html">GreenProof</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="#" id="logoutButton" class="btn btn-outline btn-sm">Sign Out</a>
+        </nav>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="container">
+            <section class="welcome-header">
+                <span class="badge badge-primary mb-xs">Environmental Actions</span>
+                <h1>Record Your <span class="text-primary-deep">Green Activity</span></h1>
+                <p class="text-medium">Log your daily or weekly sustainable actions. Carbon savings and points are calculated automatically using verified emission factors.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <!-- Activity Entry Form -->
+                <div class="dashboard-main">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-accent mb-xs">New Entry</span>
+                                <h2>Log Green Action</h2>
+                            </div>
+                        </div>
+
+                        <form id="activityForm" novalidate>
+                            <!-- Activity Select -->
+                            <div class="form-group">
+                                <label for="activity">Select Green Activity</label>
+                                <select id="activity" class="form-control" required>
+                                    <option value="">Loading activities catalog...</option>
+                                </select>
+                            </div>
+
+                            <!-- Description Callout -->
+                            <div id="activityDescBox" class="card mb-lg" style="background: var(--color-off-white); border: 1px dashed var(--color-light-sage); display: none;">
+                                <strong id="selectedActivityTitle" style="color: var(--color-primary-deep); display: block; margin-bottom: 0.25rem;"></strong>
+                                <p id="activityDescription" class="text-sm text-medium"></p>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <!-- Quantity -->
+                                <div class="form-group">
+                                    <label for="quantity">
+                                        Quantity <span id="unitText" class="text-light text-xs font-normal">(select an activity)</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="quantity"
+                                        class="form-control"
+                                        min="0.01"
+                                        step="0.01"
+                                        placeholder="e.g. 5"
+                                        required
+                                    >
+                                </div>
+
+                                <!-- Frequency -->
+                                <div class="form-group">
+                                    <label for="frequency">Weekly Frequency</label>
+                                    <input
+                                        type="number"
+                                        id="frequency"
+                                        class="form-control"
+                                        min="1"
+                                        max="7"
+                                        step="1"
+                                        value="1"
+                                        placeholder="Times per week (1-7)"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Date -->
+                            <div class="form-group">
+                                <label for="activityDate">Activity Date</label>
+                                <input
+                                    type="date"
+                                    id="activityDate"
+                                    class="form-control"
+                                    required
+                                >
+                            </div>
+
+                            <!-- Live Interactive Impact Assessment -->
+                            <div class="card mb-lg" style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-lg); padding: 1.25rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span class="badge badge-accent">Impact Assessment</span>
+                                        <div style="font-weight: 700; color: var(--slate-900); font-size: 1.05rem; margin-top: 4px;">Verified Environmental Impact</div>
+                                    </div>
+                                    <span id="mlPreviewBadge" class="status-badge badge-active">—</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed rgba(16, 185, 129, 0.25);">
+                                    <div>
+                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 600;">Est. Avoided CO₂</span>
+                                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--emerald-700);" id="liveEstCO2">—</div>
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 600;">Est. Carbon Points</span>
+                                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--slate-900);" id="liveEstPoints">—</div>
+                                    </div>
+                                </div>
+                                <p id="mlPreviewNote" style="font-size: 0.8rem; color: var(--slate-500); margin-top: 0.6rem;">
+                                    Calculated with verified emission factors and certified ecological benchmarks.
+                                </p>
+                            </div>
+
+                            <button type="submit" id="submitActivityBtn" class="btn btn-primary btn-lg btn-block">
+                                Save Green Activity
+                            </button>
+
+                            <div id="activityMessage" class="form-message" role="status" aria-live="polite"></div>
+                        </form>
+                    </div>
+
+                    <!-- Success Confirmation Banner -->
+                    <div id="successCard" class="card mt-xl" style="display: none; border-color: var(--color-primary); background: var(--color-white);">
+                        <div class="card-header" style="border-bottom: 1px solid var(--color-light-sage); padding-bottom: 1rem;">
+                            <div>
+                                <span class="badge badge-primary mb-xs">Success</span>
+                                <h2>Activity Recorded Successfully</h2>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid mb-lg" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem;">
+                            <div class="stat-card" style="padding: 1rem;">
+                                <span class="stat-label">CO₂ Mitigated</span>
+                                <h3 id="savedCO2" class="text-primary-deep" style="font-size: 1.5rem; margin: 0.25rem 0;">0.00</h3>
+                                <span class="stat-meta">kg</span>
+                            </div>
+                            <div class="stat-card" style="padding: 1rem;">
+                                <span class="stat-label">Points Awarded</span>
+                                <h3 id="earnedPoints" class="text-primary" style="font-size: 1.5rem; margin: 0.25rem 0;">0</h3>
+                                <span class="stat-meta">points</span>
+                            </div>
+                            <div class="stat-card" style="padding: 1rem;">
+                                <span class="stat-label">Calculated Impact</span>
+                                <h3 id="activityImpact" class="text-dark" style="font-size: 1.5rem; margin: 0.25rem 0;">—</h3>
+                                <span class="stat-meta">environmental</span>
+                            </div>
+                            <div class="stat-card" style="padding: 1rem;">
+                                <span class="stat-label">Projected Impact</span>
+                                <h3 id="mlResultBadge" class="text-accent" style="font-size: 1.5rem; margin: 0.25rem 0;">—</h3>
+                                <span class="stat-meta">Verified Tier</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" id="logAnotherBtn" class="btn btn-secondary">Log Another Action</button>
+                            <a href="dashboard.html" class="btn btn-primary">View in Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Activities Reference Sidebar -->
+                <div class="dashboard-sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-primary mb-xs">Reference</span>
+                                <h3>Available Activities</h3>
+                            </div>
+                        </div>
+                        <p class="text-xs text-light mb-md">Standard emission factors per activity unit:</p>
+                        <div id="activityList" class="recent-activities-list">
+                            <p class="loading-state">Loading activities catalog...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/activities.js"></script>
+</body>
+</html>

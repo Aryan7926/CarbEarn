@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinator & Admin Control Center — CarbEarn</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="dashboard-page">
+
+    <!-- Top Floating Glass Navbar (Consistent with Website) -->
+    <header class="navbar">
+        <a href="admin.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn <span class="badge badge-accent" style="font-size: 0.65rem; margin-left: 6px;">ADMIN</span>
+        </a>
+        <nav class="nav-links">
+            <a href="#overview" class="admin-tab-btn active" data-tab="tabOverview">Overview</a>
+            <a href="#tree-queue" class="admin-tab-btn" data-tab="tabTreeQueue">
+                Tree Queue <span id="pendingTreesBadge" class="badge badge-medium" style="font-size: 0.7rem; padding: 1px 6px; display: none;">0</span>
+            </a>
+            <a href="#care-queue" class="admin-tab-btn" data-tab="tabCareQueue">
+                Care Checks <span id="pendingCareBadge" class="badge badge-medium" style="font-size: 0.7rem; padding: 1px 6px; display: none;">0</span>
+            </a>
+            <a href="#users" class="admin-tab-btn" data-tab="tabUsers">Contributors</a>
+            <a href="#admins" class="admin-tab-btn" data-tab="tabAdmins">Admins & Staff</a>
+            <a href="#activities" class="admin-tab-btn" data-tab="tabActivities">Activity Audit</a>
+        </nav>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="user-menu-pill">
+                <span>🛡️</span>
+                <span id="adminProfileName">Administrator</span>
+            </div>
+            <button type="button" id="adminLogout" class="btn btn-secondary btn-sm">Sign Out</button>
+        </div>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="container">
+
+            <!-- Welcome Banner (Consistent CleanTech Style) -->
+            <section class="welcome-banner">
+                <div class="welcome-text">
+                    <span class="badge badge-primary mb-xs" style="background: rgba(16, 185, 129, 0.2); color: #ffffff; border-color: rgba(16, 185, 129, 0.4);">
+                        Platform Governance
+                    </span>
+                    <h1>Coordinator & Admin Control Center</h1>
+                    <p>Verify newly registered saplings, audit periodic health inspections, and oversee campus sustainability veracity.</p>
+                </div>
+                <div>
+                    <button type="button" id="refreshAdmin" class="btn btn-primary btn-sm">
+                        ↻ Refresh Live Data
+                    </button>
+                </div>
+            </section>
+
+            <div id="adminMessage" class="form-message" role="status" aria-live="polite"></div>
+
+            <!-- Metric Cards Grid (6 Live Cards) -->
+            <section class="stats-grid mb-xl" id="overview">
+                <div class="stat-card" style="border-left: 4px solid var(--emerald-500);">
+                    <div class="stat-header">
+                        <span>Pending Trees</span>
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">🌲</div>
+                    </div>
+                    <div class="stat-value" id="pendingTreesCount">0</div>
+                    <div class="stat-subtext">Awaiting verification</div>
+                </div>
+
+                <div class="stat-card" style="border-left: 4px solid var(--emerald-500);">
+                    <div class="stat-header">
+                        <span>Pending Care Checks</span>
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">🔍</div>
+                    </div>
+                    <div class="stat-value" id="pendingReviewsCount">0</div>
+                    <div class="stat-subtext">Health logs to audit</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Verified Trees</span>
+                        <div class="stat-icon">🌳</div>
+                    </div>
+                    <div class="stat-value" id="totalTrees">0</div>
+                    <div class="stat-subtext">Living registered saplings</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Active Contributors</span>
+                        <div class="stat-icon">👥</div>
+                    </div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-subtext">Registered members</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Avoided Emissions</span>
+                        <div class="stat-icon">⚡</div>
+                    </div>
+                    <div class="stat-value">
+                        <span id="totalCO2Saved">0.00</span> <small style="font-size: 1rem; color: var(--slate-500);">kg</small>
+                    </div>
+                    <div class="stat-subtext">Verified mitigation</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span>Logged Actions</span>
+                        <div class="stat-icon">✨</div>
+                    </div>
+                    <div class="stat-value" id="totalActivities">0</div>
+                    <div class="stat-subtext">Lifetime activity records</div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs / Section Filter -->
+            <div style="display: flex; gap: 0.5rem; background: var(--slate-100); padding: 5px; border-radius: var(--radius-full); margin-bottom: 2rem; width: fit-content; max-width: 100%; overflow-x: auto;">
+                <button type="button" class="btn btn-sm tab-pill active" id="btnTabTreeQueue">
+                    🌲 New Tree Registrations Queue
+                </button>
+                <button type="button" class="btn btn-sm tab-pill" id="btnTabCareQueue">
+                    🔍 Care Inspections Queue
+                </button>
+                <button type="button" class="btn btn-sm tab-pill" id="btnTabUsers">
+                    👥 Contributor Directory
+                </button>
+                <button type="button" class="btn btn-sm tab-pill" id="btnTabActivities">
+                    📜 Live Activity Audit Feed
+                </button>
+            </div>
+
+            <!-- SECTION 1: New Tree Registration Queue (REQUESTED SIGNATURE FEATURE) -->
+            <section id="sectionTreeQueue" class="admin-section mb-2xl">
+                <div class="card">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge badge-accent mb-xs">Tree Verification Queue</span>
+                            <h2>Audit New Sapling Registrations</h2>
+                            <p class="text-sm text-medium">Verify whether newly registered trees are correct or mark them as incorrect with coordinator feedback.</p>
+                        </div>
+                    </div>
+
+                    <div id="pendingTreesContainer" style="margin-top: 1rem;">
+                        <p class="loading-state">Loading pending tree registrations...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: Care Inspection Queue -->
+            <section id="sectionCareQueue" class="admin-section mb-2xl" style="display: none;">
+                <div class="card">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge badge-accent mb-xs">Inspection Queue</span>
+                            <h2>GreenProof Health Inspections</h2>
+                            <p class="text-sm text-medium">Review periodic survival reports and photographic proof to award stewardship bonuses.</p>
+                        </div>
+                    </div>
+
+                    <div id="pendingReviewsContainer" style="margin-top: 1rem;">
+                        <p class="loading-state">Loading pending health inspections...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Contributor Directory -->
+            <section id="sectionUsers" class="admin-section mb-2xl" style="display: none;">
+                <div class="card">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge badge-accent mb-xs">Community Directory</span>
+                            <h2>Campus Contributors</h2>
+                        </div>
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="userSearch" placeholder="Search by name, email, or college...">
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="margin-top: 1rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Contributor</th>
+                                    <th>Institution</th>
+                                    <th>Role</th>
+                                    <th>Actions Logged</th>
+                                    <th>CO₂ Saved</th>
+                                    <th>Carbon Points</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr><td colspan="7" class="loading-state">Loading contributors...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3B: Administrators & Platform Governance -->
+            <section id="sectionAdmins" class="admin-section mb-2xl" style="display: none;">
+                <div class="card">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge badge-accent mb-xs">Governance Team</span>
+                            <h2>Platform Administrators</h2>
+                        </div>
+                        <div>
+                            <button type="button" id="openAddAdminModalBtn" class="btn btn-primary btn-sm">
+                                + Register New Administrator
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="margin-top: 1rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Administrator</th>
+                                    <th>Email</th>
+                                    <th>Institution / Department</th>
+                                    <th>Role</th>
+                                    <th>Registration Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminsTableBody">
+                                <tr><td colspan="5" class="loading-state">Loading administrators...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Live Activity Audit Feed -->
+            <section id="sectionActivities" class="admin-section mb-2xl" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <span class="badge badge-accent mb-xs">Live Environmental Ledger</span>
+                            <h2>All Logged Activities</h2>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="margin-top: 1rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Contributor</th>
+                                    <th>Green Action</th>
+                                    <th>Volume & Frequency</th>
+                                    <th>CO₂ Avoided</th>
+                                    <th>Points</th>
+                                    <th>Impact Tier</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activitiesTableBody">
+                                <tr><td colspan="7" class="loading-state">Loading activities...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- MODAL 1: Tree Verification Modal (Approve Correct / Mark Incorrect) -->
+    <div id="treeReviewModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <span class="badge badge-accent mb-xs">Tree Verification</span>
+                    <h2 id="treeModalTitle">Audit Tree Registration</h2>
+                </div>
+                <button type="button" id="closeTreeModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+            </div>
+
+            <div id="treeModalDetails" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <!-- Populated dynamically -->
+            </div>
+
+            <form id="reviewTreeForm">
+                <input type="hidden" id="modalTreeId">
+
+                <div class="form-group">
+                    <label for="treeVerificationDecision">Verification Decision</label>
+                    <select id="treeVerificationDecision" class="form-control" required>
+                        <option value="Verified">✓ Correct — Approve Sapling (+50 Carbon Points)</option>
+                        <option value="Rejected">✕ Incorrect — Reject Submission (0 Points)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="treeAdminNotes">Coordinator Audit Notes & Feedback</label>
+                    <textarea id="treeAdminNotes" class="form-control" placeholder="Provide feedback to the student (e.g., 'Species & planting location confirmed with ground inspection', or reason for rejection)..." rows="3"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" id="cancelTreeModalBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitTreeDecisionBtn" class="btn btn-primary">Confirm Verification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Care Inspection Review Modal -->
+    <div id="reviewModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <span class="badge badge-accent mb-xs">Health Audit</span>
+                    <h2>Review Care Inspection</h2>
+                </div>
+                <button type="button" id="closeReviewModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+            </div>
+
+            <div id="modalInspectionDetails" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <!-- Populated dynamically -->
+            </div>
+
+            <form id="reviewInspectionForm">
+                <input type="hidden" id="modalLogId">
+
+                <div class="form-group">
+                    <label for="reviewStatusSelect">Verification Decision</label>
+                    <select id="reviewStatusSelect" class="form-control" required>
+                        <option value="Verified">✓ Verified — Confirm Care (+25 Stewardship Bonus)</option>
+                        <option value="Rejected">✕ Rejected — Insufficient / Invalid Evidence</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewNotesInput">Coordinator Feedback</label>
+                    <textarea id="reviewNotesInput" class="form-control" placeholder="Add constructive notes for the contributor..." rows="3"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" id="cancelReviewBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitReviewDecisionBtn" class="btn btn-primary">Save Decision</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Register Administrator Modal -->
+    <div id="addAdminModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <span class="badge badge-accent mb-xs">Platform Governance</span>
+                    <h2>Register New Administrator</h2>
+                </div>
+                <button type="button" id="closeAddAdminModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+            </div>
+
+            <form id="addAdminForm">
+                <div class="form-group">
+                    <label for="newAdminName">Administrator Full Name</label>
+                    <input type="text" id="newAdminName" class="form-control" placeholder="Prof. Jordan Vance" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newAdminEmail">Official Email Address</label>
+                    <input type="email" id="newAdminEmail" class="form-control" placeholder="admin2@carbearn.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newAdminPassword">Password</label>
+                    <input type="password" id="newAdminPassword" class="form-control" placeholder="Min. 6 characters" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newAdminCollege">Institution / Department</label>
+                    <input type="text" id="newAdminCollege" class="form-control" placeholder="CarbEarn Platform Governance" value="CarbEarn Administration">
+                </div>
+
+                <div id="adminCreateMsg" class="form-message mb-md" style="display: none;"></div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" id="cancelAddAdminBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitAddAdminBtn" class="btn btn-primary">Create Administrator</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn Administration. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

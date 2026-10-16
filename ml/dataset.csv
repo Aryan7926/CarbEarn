@@ -1,0 +1,501 @@
+activity_type,quantity,frequency,impact
+Walking,3,1,Low
+Carpooling,2,1,Low
+Electricity Saving,1,1,Low
+Carpooling,9,1,Low
+Carpooling,82,7,High
+Electricity Saving,4,2,Low
+Cycling,4,2,Low
+Tree Planting,1,1,Low
+Walking,4,1,Low
+LED Usage,42,4,Medium
+Reusable Bottle,68,7,High
+Walking,25,7,High
+LED Usage,73,6,High
+Cycling,23,6,High
+Walking,1,2,Low
+Tree Planting,2,1,Medium
+LED Usage,39,6,Medium
+Tree Planting,3,2,High
+Carpooling,8,2,Low
+Tree Planting,10,2,High
+LED Usage,8,1,Low
+LED Usage,43,4,Medium
+Carpooling,97,7,High
+LED Usage,21,2,Low
+Electricity Saving,33,6,High
+Tree Planting,1,1,Low
+Electricity Saving,31,7,High
+Carpooling,9,2,Low
+Walking,1,1,Low
+Public Transport,68,7,High
+Walking,12,5,Medium
+Reusable Bottle,77,6,High
+Walking,33,6,High
+LED Usage,10,2,Low
+Public Transport,11,5,Medium
+Tree Planting,4,1,High
+Tree Planting,10,2,High
+Public Transport,35,3,Medium
+Cycling,26,6,High
+Cycling,3,2,Low
+Carpooling,4,1,Low
+Walking,31,5,High
+Public Transport,8,1,Low
+Tree Planting,8,2,High
+Carpooling,60,6,High
+LED Usage,59,5,Medium
+Walking,2,1,Low
+LED Usage,19,3,Low
+Carpooling,55,5,High
+Walking,36,5,High
+Carpooling,1,2,Low
+Walking,23,6,High
+Reusable Bottle,18,1,Low
+Reusable Bottle,16,2,Low
+Carpooling,2,2,Low
+LED Usage,52,5,Medium
+Cycling,36,7,High
+Walking,4,2,Low
+Walking,2,1,Low
+Reusable Bottle,14,1,Low
+Tree Planting,1,1,Medium
+Reusable Bottle,67,6,High
+Cycling,2,1,Low
+Electricity Saving,15,3,Medium
+Electricity Saving,2,2,Low
+Cycling,10,4,Medium
+Tree Planting,2,1,Medium
+Carpooling,17,3,Medium
+Cycling,26,5,High
+Cycling,31,7,High
+Public Transport,9,1,Low
+Public Transport,10,1,Low
+Carpooling,14,5,Medium
+Carpooling,79,5,High
+Walking,15,5,Medium
+LED Usage,39,6,Medium
+LED Usage,9,2,Low
+Public Transport,82,6,High
+Reusable Bottle,30,4,Medium
+Reusable Bottle,97,6,High
+Walking,22,7,High
+Tree Planting,1,1,Low
+Carpooling,20,3,Medium
+Reusable Bottle,80,6,High
+Tree Planting,3,2,High
+Tree Planting,1,1,Low
+Tree Planting,1,1,Medium
+Carpooling,81,6,High
+Reusable Bottle,29,4,Medium
+Electricity Saving,8,3,Medium
+LED Usage,21,2,Low
+Public Transport,69,7,High
+Electricity Saving,19,6,High
+Walking,20,7,High
+Cycling,15,5,Medium
+Public Transport,15,3,Medium
+Tree Planting,1,1,Medium
+Carpooling,56,7,High
+Walking,14,4,Medium
+Public Transport,3,1,Low
+Electricity Saving,2,2,Low
+Electricity Saving,42,6,High
+Tree Planting,1,1,Low
+Cycling,9,3,Medium
+Reusable Bottle,45,4,Medium
+Carpooling,4,2,Low
+LED Usage,30,5,Medium
+LED Usage,93,7,High
+LED Usage,4,2,Low
+Public Transport,57,5,High
+Walking,29,6,High
+LED Usage,58,4,Medium
+Electricity Saving,25,7,High
+Cycling,29,5,High
+Carpooling,24,3,Medium
+LED Usage,81,6,High
+Tree Planting,6,4,High
+LED Usage,44,6,Medium
+Public Transport,7,2,Low
+Public Transport,77,6,High
+Electricity Saving,45,6,High
+Tree Planting,1,1,Medium
+LED Usage,54,5,Medium
+Carpooling,71,7,High
+Public Transport,46,6,High
+LED Usage,25,1,Low
+Tree Planting,1,1,Low
+Cycling,2,2,Low
+Walking,12,5,Medium
+Carpooling,85,6,High
+Reusable Bottle,41,4,Medium
+Cycling,4,1,Low
+Public Transport,74,6,High
+Cycling,23,5,High
+Reusable Bottle,15,3,Low
+LED Usage,58,5,Medium
+Reusable Bottle,24,2,Low
+Reusable Bottle,41,6,Medium
+Tree Planting,9,2,High
+Tree Planting,1,1,Medium
+Carpooling,21,4,Medium
+Walking,2,1,Low
+Electricity Saving,23,6,High
+Walking,12,4,Medium
+Reusable Bottle,29,4,Medium
+Electricity Saving,17,5,Medium
+Cycling,28,6,High
+Cycling,10,4,Medium
+Electricity Saving,42,6,High
+Reusable Bottle,9,2,Low
+Reusable Bottle,13,2,Low
+Electricity Saving,24,7,High
+Public Transport,75,5,High
+Electricity Saving,37,6,High
+Walking,29,5,High
+Reusable Bottle,2,2,Low
+Electricity Saving,11,4,Medium
+LED Usage,50,5,Medium
+Electricity Saving,9,4,Medium
+Cycling,33,5,High
+LED Usage,21,1,Low
+Cycling,2,1,Low
+Cycling,20,5,High
+Public Transport,32,3,Medium
+Carpooling,33,4,Medium
+LED Usage,20,3,Low
+Walking,3,1,Low
+Cycling,15,5,Medium
+Electricity Saving,11,3,Medium
+Carpooling,5,1,Low
+Cycling,14,4,Medium
+LED Usage,17,3,Low
+LED Usage,14,2,Low
+Walking,11,5,Medium
+Reusable Bottle,70,7,High
+Public Transport,74,7,High
+Tree Planting,10,4,High
+Reusable Bottle,43,5,Medium
+Carpooling,5,2,Low
+Carpooling,29,5,Medium
+Electricity Saving,8,4,Medium
+LED Usage,16,1,Low
+LED Usage,47,5,Medium
+Tree Planting,2,2,High
+Walking,4,2,Low
+Carpooling,71,7,High
+Reusable Bottle,27,4,Medium
+Tree Planting,1,1,Low
+Tree Planting,7,4,High
+LED Usage,47,5,Medium
+Reusable Bottle,45,5,Medium
+Carpooling,4,2,Low
+Walking,33,7,High
+Public Transport,4,2,Low
+Tree Planting,10,3,High
+Walking,3,1,Low
+LED Usage,10,1,Low
+Public Transport,12,3,Medium
+Tree Planting,4,4,High
+Walking,5,2,Low
+Reusable Bottle,54,5,Medium
+Public Transport,5,2,Low
+Walking,4,2,Low
+Walking,36,7,High
+Cycling,2,2,Low
+Walking,1,2,Low
+Carpooling,65,6,High
+Reusable Bottle,53,5,Medium
+Cycling,39,5,High
+Carpooling,54,6,High
+Walking,2,1,Low
+Walking,1,2,Low
+Reusable Bottle,99,7,High
+Tree Planting,1,1,Low
+Tree Planting,9,1,High
+Carpooling,36,5,Medium
+Carpooling,14,5,Medium
+Carpooling,50,6,High
+Public Transport,1,1,Low
+Tree Planting,6,4,High
+Walking,10,5,Medium
+Electricity Saving,16,5,Medium
+Reusable Bottle,31,6,Medium
+Cycling,11,5,Medium
+Tree Planting,1,1,Low
+Cycling,24,7,High
+Cycling,4,2,Low
+Tree Planting,1,1,Low
+Walking,11,4,Medium
+LED Usage,32,4,Medium
+LED Usage,57,5,Medium
+Electricity Saving,20,7,High
+Walking,10,4,Medium
+Walking,14,3,Medium
+Reusable Bottle,29,4,Medium
+LED Usage,92,7,High
+Cycling,3,1,Low
+Tree Planting,2,1,Medium
+Cycling,35,5,High
+Public Transport,28,3,Medium
+Electricity Saving,2,1,Low
+Reusable Bottle,21,1,Low
+Reusable Bottle,79,7,High
+Electricity Saving,15,3,Medium
+Reusable Bottle,70,7,High
+Carpooling,73,7,High
+Public Transport,5,2,Low
+LED Usage,78,6,High
+Tree Planting,6,4,High
+Public Transport,28,4,Medium
+LED Usage,60,5,Medium
+Reusable Bottle,38,6,Medium
+Carpooling,65,5,High
+Electricity Saving,3,2,Low
+Electricity Saving,18,5,Medium
+Public Transport,12,3,Medium
+LED Usage,15,1,Low
+Reusable Bottle,24,1,Low
+Electricity Saving,23,6,High
+Reusable Bottle,47,6,Medium
+Electricity Saving,21,7,High
+Electricity Saving,18,5,Medium
+Reusable Bottle,63,6,High
+Carpooling,84,6,High
+Carpooling,46,6,High
+Walking,38,5,High
+Reusable Bottle,23,2,Low
+Cycling,3,1,Low
+Tree Planting,2,1,Medium
+Public Transport,9,2,Low
+Public Transport,3,1,Low
+Electricity Saving,40,6,High
+Reusable Bottle,70,6,High
+Reusable Bottle,77,7,High
+Tree Planting,2,4,High
+Tree Planting,10,2,High
+Walking,11,5,Medium
+Tree Planting,8,3,High
+Reusable Bottle,38,5,Medium
+Reusable Bottle,8,2,Low
+LED Usage,79,7,High
+Cycling,28,6,High
+Cycling,37,7,High
+Cycling,39,6,High
+Tree Planting,1,1,Low
+Carpooling,57,7,High
+Public Transport,47,7,High
+Cycling,13,3,Medium
+LED Usage,69,6,High
+Tree Planting,2,1,Medium
+Carpooling,9,2,Low
+Tree Planting,1,1,Low
+Tree Planting,7,1,High
+Reusable Bottle,5,1,Low
+Electricity Saving,30,6,High
+Electricity Saving,3,1,Low
+Reusable Bottle,42,6,Medium
+Electricity Saving,30,6,High
+Carpooling,11,5,Medium
+LED Usage,75,6,High
+Reusable Bottle,80,7,High
+Walking,1,1,Low
+Tree Planting,1,1,Medium
+Carpooling,49,6,High
+Reusable Bottle,60,5,Medium
+Public Transport,31,3,Medium
+Reusable Bottle,87,7,High
+Cycling,27,5,High
+Reusable Bottle,41,5,Medium
+Walking,27,7,High
+LED Usage,13,2,Low
+Carpooling,8,1,Low
+Carpooling,81,7,High
+Cycling,3,1,Low
+Public Transport,54,5,High
+Carpooling,54,5,High
+LED Usage,20,1,Low
+Tree Planting,1,1,Low
+Public Transport,1,1,Low
+Cycling,9,5,Medium
+LED Usage,6,2,Low
+Cycling,4,1,Low
+Walking,13,4,Medium
+Walking,14,3,Medium
+Cycling,37,7,High
+Tree Planting,1,1,Medium
+Reusable Bottle,53,6,Medium
+Walking,13,3,Medium
+Walking,15,3,Medium
+Walking,3,2,Low
+Electricity Saving,35,7,High
+Reusable Bottle,99,7,High
+Walking,19,7,High
+Carpooling,25,3,Medium
+Electricity Saving,15,4,Medium
+Electricity Saving,22,7,High
+Electricity Saving,18,4,Medium
+LED Usage,22,2,Low
+Walking,1,1,Low
+Electricity Saving,6,2,Low
+Public Transport,44,7,High
+LED Usage,68,7,High
+LED Usage,88,6,High
+Tree Planting,6,3,High
+Walking,32,5,High
+Public Transport,71,5,High
+Walking,14,4,Medium
+Walking,15,3,Medium
+Electricity Saving,43,6,High
+Tree Planting,1,1,Low
+Tree Planting,2,1,Medium
+Public Transport,10,2,Low
+Walking,1,1,Low
+Carpooling,24,4,Medium
+LED Usage,12,2,Low
+LED Usage,99,6,High
+Cycling,2,1,Low
+Walking,13,5,Medium
+Electricity Saving,17,4,Medium
+Electricity Saving,11,5,Medium
+Walking,12,3,Medium
+Tree Planting,9,3,High
+Cycling,4,1,Low
+Cycling,3,1,Low
+Public Transport,20,4,Medium
+Walking,4,2,Low
+Public Transport,7,1,Low
+LED Usage,13,3,Low
+Cycling,6,4,Medium
+Walking,15,4,Medium
+Electricity Saving,39,7,High
+Tree Planting,1,1,Low
+LED Usage,20,2,Low
+LED Usage,14,1,Low
+Carpooling,29,4,Medium
+Walking,10,5,Medium
+LED Usage,11,1,Low
+Walking,36,5,High
+Carpooling,22,5,Medium
+Public Transport,2,1,Low
+Tree Planting,1,1,Low
+Walking,4,2,Low
+Reusable Bottle,97,7,High
+LED Usage,15,1,Low
+Reusable Bottle,45,5,Medium
+Cycling,14,3,Medium
+Tree Planting,2,1,Medium
+Cycling,10,3,Medium
+Walking,35,7,High
+Electricity Saving,17,5,Medium
+Cycling,15,5,Medium
+Carpooling,30,4,Medium
+Public Transport,8,1,Low
+LED Usage,66,6,High
+Cycling,4,2,Low
+Public Transport,22,4,Medium
+Electricity Saving,13,5,Medium
+Cycling,36,6,High
+Walking,7,5,Medium
+Electricity Saving,12,5,Medium
+Public Transport,13,5,Medium
+Public Transport,20,5,Medium
+Electricity Saving,5,1,Low
+Tree Planting,8,3,High
+Public Transport,85,7,High
+Walking,37,6,High
+LED Usage,12,2,Low
+Public Transport,6,2,Low
+Carpooling,3,1,Low
+Walking,7,5,Medium
+Cycling,26,7,High
+Public Transport,65,5,High
+Public Transport,10,1,Low
+Reusable Bottle,14,2,Low
+Carpooling,30,4,Medium
+Reusable Bottle,18,1,Low
+Tree Planting,1,1,Medium
+Reusable Bottle,44,5,Medium
+Electricity Saving,7,1,Low
+Public Transport,12,5,Medium
+Reusable Bottle,32,6,Medium
+Walking,7,3,Medium
+Tree Planting,1,1,Medium
+Walking,4,2,Low
+Cycling,6,4,Medium
+LED Usage,13,1,Low
+LED Usage,1,2,Low
+Walking,36,6,High
+Public Transport,1,2,Low
+Reusable Bottle,69,7,High
+Reusable Bottle,61,6,High
+Cycling,9,3,Medium
+Electricity Saving,7,2,Low
+Carpooling,14,3,Medium
+Carpooling,31,5,Medium
+Reusable Bottle,4,2,Low
+Cycling,32,7,High
+Carpooling,50,6,High
+Electricity Saving,5,2,Low
+Carpooling,67,5,High
+Walking,27,5,High
+Cycling,13,3,Medium
+Electricity Saving,12,5,Medium
+Cycling,7,4,Medium
+Carpooling,83,7,High
+Walking,39,6,High
+Public Transport,6,2,Low
+Public Transport,70,7,High
+Reusable Bottle,72,6,High
+Walking,40,6,High
+Cycling,9,3,Medium
+Carpooling,6,2,Low
+Electricity Saving,34,7,High
+Cycling,22,6,High
+LED Usage,21,2,Low
+Tree Planting,1,1,Low
+Electricity Saving,33,7,High
+LED Usage,16,3,Low
+Reusable Bottle,59,5,Medium
+Walking,29,5,High
+Electricity Saving,45,6,High
+Tree Planting,1,1,Medium
+LED Usage,79,7,High
+Reusable Bottle,88,6,High
+Reusable Bottle,54,4,Medium
+LED Usage,88,7,High
+Cycling,4,2,Low
+Public Transport,3,2,Low
+Cycling,1,1,Low
+LED Usage,50,6,Medium
+Cycling,20,7,High
+Reusable Bottle,49,5,Medium
+Walking,20,7,High
+LED Usage,46,6,Medium
+Tree Planting,1,1,Low
+Public Transport,27,4,Medium
+Walking,10,5,Medium
+Reusable Bottle,20,2,Low
+Reusable Bottle,4,1,Low
+Walking,8,5,Medium
+Reusable Bottle,22,2,Low
+LED Usage,65,7,High
+Tree Planting,1,1,Low
+Carpooling,4,1,Low
+Carpooling,11,4,Medium
+LED Usage,34,6,Medium
+Walking,3,2,Low
+Reusable Bottle,87,7,High
+Walking,3,1,Low
+Reusable Bottle,59,5,Medium
+Public Transport,81,7,High
+Public Transport,7,1,Low
+Walking,20,6,High
+Public Transport,6,1,Low
+LED Usage,79,6,High
+Tree Planting,1,1,Low
+Tree Planting,10,1,High
+Public Transport,78,5,High
+Public Transport,80,7,High
+LED Usage,63,6,High

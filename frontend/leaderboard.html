@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Leaderboard — CarbEarn</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+    <header class="navbar">
+        <a href="dashboard.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn
+        </a>
+        <nav class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="activities.html">Activities</a>
+            <a href="history.html">History</a>
+            <a href="greenproof.html">GreenProof</a>
+            <a href="leaderboard.html" class="active">Leaderboard</a>
+            <a href="#" id="logoutButton" class="btn btn-outline btn-sm">Sign Out</a>
+        </nav>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="container">
+            <section class="welcome-header">
+                <span class="badge badge-accent mb-xs">Campus Standings</span>
+                <h1>Green <span class="text-primary-deep">Leaderboard</span></h1>
+                <p class="text-medium">Celebrate collective sustainability achievements across student cohorts and institutions.</p>
+            </section>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-primary mb-xs">Rankings</span>
+                        <h2>Top Contributors</h2>
+                    </div>
+                    <div id="totalUsers" class="badge badge-accent" style="font-size: 0.9rem;">
+                        0 participants
+                    </div>
+                </div>
+
+                <div class="leaderboard-table-wrapper" style="overflow-x: auto;">
+                    <div id="leaderboardContainer">
+                        <p class="loading-state">Loading campus leaderboard rankings...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/leaderboard.js"></script>
+</body>
+</html>

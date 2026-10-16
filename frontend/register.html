@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — CarbEarn</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="index.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn
+        </a>
+        <nav class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="login.html" class="btn btn-outline btn-sm">Sign In</a>
+        </nav>
+    </header>
+
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="auth-info">
+                <span class="badge badge-accent mb-sm">Join the Community</span>
+                <h1 style="font-size: 2.5rem; line-height: 1.15; margin-bottom: 1rem;">
+                    Start tracking your climate impact.
+                </h1>
+                <p class="text-medium mb-lg">
+                    Create your CarbEarn account to log green transit, energy conservation, and tree stewardship. Convert small conscious actions into measurable carbon savings.
+                </p>
+
+                <div class="auth-benefits">
+                    <div>
+                        <strong>Institutional Collaboration</strong>
+                        <span>Connect with peers from your college or organization.</span>
+                    </div>
+                    <div>
+                        <strong>Verifiable Recognition</strong>
+                        <span>Earn carbon points tied to transparent emission factors.</span>
+                    </div>
+                    <div>
+                        <strong>GreenProof Tree Stewardship</strong>
+                        <span>Register saplings and log verifiable health inspections.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-card">
+                <h2>Create Your Account</h2>
+                <p class="auth-subtitle">Register to begin recording your activities.</p>
+
+                <form id="registerForm" novalidate>
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            class="form-control"
+                            placeholder="Alex Morgan"
+                            required
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            class="form-control"
+                            placeholder="alex@campus.edu"
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            class="form-control"
+                            placeholder="Create a secure password (min. 6 characters)"
+                            required
+                            autocomplete="new-password"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="college">College or Institution</label>
+                        <input
+                            type="text"
+                            id="college"
+                            class="form-control"
+                            placeholder="e.g. Green Valley University"
+                            required
+                        >
+                    </div>
+
+                    <div style="margin: 1.25rem 0 1rem; padding-top: 0.75rem; border-top: 1px dashed var(--color-light-sage);">
+                        <button type="button" id="toggleAdminRegBtn" style="background: none; border: none; font-size: 0.85rem; color: var(--emerald-700); cursor: pointer; text-decoration: underline; padding: 0; font-weight: 600;">
+                            🛡️ Registering as Platform Administrator?
+                        </button>
+                        <div id="adminKeyGroup" style="display: none; margin-top: 0.75rem;">
+                            <label for="adminSecret" style="font-size: 0.85rem; font-weight: 600; color: var(--emerald-900);">Admin Passcode Key</label>
+                            <input
+                                type="password"
+                                id="adminSecret"
+                                class="form-control"
+                                placeholder="Enter admin authorization key (default: CARBEARN_ADMIN_2026)"
+                                autocomplete="off"
+                            >
+                            <span style="font-size: 0.75rem; color: var(--slate-500); display: block; margin-top: 4px;">Enables administrator role to audit saplings and manage platform governance.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="registerBtn" class="btn btn-primary btn-block btn-lg">
+                        Create Account
+                    </button>
+
+                    <div id="registerMessage" class="form-message" role="status" aria-live="polite"></div>
+                </form>
+
+                <p class="auth-footer">
+                    Already registered?
+                    <a href="login.html">Sign in here</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

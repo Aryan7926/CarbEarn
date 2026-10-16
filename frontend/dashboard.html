@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — CarbEarn</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+    <!-- Authenticated Header -->
+    <header class="navbar">
+        <a href="dashboard.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn
+        </a>
+        <nav class="nav-links">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="activities.html">Activities</a>
+            <a href="history.html">History</a>
+            <a href="greenproof.html">GreenProof</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="#" id="logoutButton" class="btn btn-outline btn-sm">Sign Out</a>
+        </nav>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="container">
+            <!-- Welcome Header -->
+            <section class="welcome-header">
+                <span class="badge badge-primary mb-xs">Sustainability Dashboard</span>
+                <h1>Welcome, <span id="userName" class="text-primary-deep">Learner</span></h1>
+                <p class="text-medium">Monitor your carbon mitigation, track verified activities, and nurture your GreenProof trees.</p>
+            </section>
+
+            <!-- 4 Key Stat Cards -->
+            <section class="stats-grid mb-2xl">
+                <div class="stat-card">
+                    <p class="stat-label">Total Activities</p>
+                    <h2 id="totalActivities" class="stat-value">0</h2>
+                    <span class="stat-meta">Verified contributions</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">CO₂ Mitigated</p>
+                    <h2 class="stat-value">
+                        <span id="totalCO2">0.00</span>
+                        <small>kg</small>
+                    </h2>
+                    <span class="stat-meta">Avoided carbon emissions</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Carbon Points</p>
+                    <h2 id="totalPoints" class="stat-value text-primary">0</h2>
+                    <span class="stat-meta">Points earned to date</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Overall Impact Level</p>
+                    <h2 id="overallImpact" class="stat-value text-accent">Low</h2>
+                    <span class="stat-meta">Based on weekly intensity</span>
+                </div>
+            </section>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Main Column -->
+                <div class="dashboard-main">
+                    <!-- Impact Breakdown -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-accent mb-xs">Analytics</span>
+                                <h3>Activity Impact Breakdown</h3>
+                            </div>
+                        </div>
+
+                        <div class="impact-item mb-md">
+                            <div class="impact-info">
+                                <span>Low Impact (&lt; 1 kg CO₂)</span>
+                                <strong id="lowImpact">0</strong>
+                            </div>
+                            <div class="impact-bar">
+                                <div id="lowImpactBar" class="impact-fill bg-sage" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="impact-item mb-md">
+                            <div class="impact-info">
+                                <span>Medium Impact (1 – 5 kg CO₂)</span>
+                                <strong id="mediumImpact">0</strong>
+                            </div>
+                            <div class="impact-bar">
+                                <div id="mediumImpactBar" class="impact-fill bg-primary" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="impact-item">
+                            <div class="impact-info">
+                                <span>High Impact (&gt; 5 kg CO₂)</span>
+                                <strong id="highImpact">0</strong>
+                            </div>
+                            <div class="impact-bar">
+                                <div id="highImpactBar" class="impact-fill bg-primary-deep" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-primary mb-xs">Timeline</span>
+                                <h3>Recent Green Activities</h3>
+                            </div>
+                            <a href="history.html" class="btn btn-outline btn-sm">View Full History</a>
+                        </div>
+
+                        <div id="recentActivities" class="recent-activities-list">
+                            <p class="loading-state">Loading your recent activities...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Column -->
+                <div class="dashboard-sidebar">
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <a href="activities.html" class="btn btn-primary btn-block">
+                                + Log Green Activity
+                            </a>
+                            <a href="greenproof.html" class="btn btn-secondary btn-block">
+                                🌳 GreenProof Trees
+                            </a>
+                            <a href="leaderboard.html" class="btn btn-outline btn-block">
+                                🏆 Campus Leaderboard
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Personalized Smart Suggestion -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-accent mb-xs">Personalized Insight</span>
+                                <h3>Smart Recommendation</h3>
+                            </div>
+                        </div>
+                        <div id="recommendationContent">
+                            <p class="loading-state">Analyzing activity patterns...</p>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Carbon Savings Goal -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Monthly Milestone</h3>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                <span>Target: 50.0 kg CO₂</span>
+                                <strong id="goalPercentage">0%</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="goalProgress" class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-light">Mitigating 50 kg of CO₂ monthly is equivalent to planting two mature native trees.</p>
+                    </div>
+
+                    <!-- User Account Summary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Account Profile</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+                            <div>
+                                <span class="text-light">Name:</span>
+                                <strong id="profileName" style="display: block;">—</strong>
+                            </div>
+                            <div>
+                                <span class="text-light">Email:</span>
+                                <strong id="profileEmail" style="display: block;">—</strong>
+                            </div>
+                            <div>
+                                <span class="text-light">Institution:</span>
+                                <strong id="profileCollege" style="display: block;">—</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

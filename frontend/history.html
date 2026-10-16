@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity History — CarbEarn</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+    <header class="navbar">
+        <a href="dashboard.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn
+        </a>
+        <nav class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="activities.html">Activities</a>
+            <a href="history.html" class="active">History</a>
+            <a href="greenproof.html">GreenProof</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="#" id="logoutButton" class="btn btn-outline btn-sm">Sign Out</a>
+        </nav>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="container">
+            <section class="welcome-header">
+                <span class="badge badge-primary mb-xs">Historical Ledger</span>
+                <h1>Your Green <span class="text-primary-deep">Activity History</span></h1>
+                <p class="text-medium">Inspect every logged contribution, filter by category or impact level, and audit your total carbon savings.</p>
+            </section>
+
+            <!-- Summary Totals -->
+            <section class="stats-grid mb-2xl">
+                <div class="stat-card">
+                    <p class="stat-label">Total Recorded</p>
+                    <h2 id="totalActivities" class="stat-value">0</h2>
+                    <span class="stat-meta">Lifetime entries</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Total CO₂ Mitigated</p>
+                    <h2 class="stat-value">
+                        <span id="totalCO2">0.00</span>
+                        <small>kg</small>
+                    </h2>
+                    <span class="stat-meta">Verified environmental savings</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Total Carbon Points</p>
+                    <h2 id="totalPoints" class="stat-value text-primary">0</h2>
+                    <span class="stat-meta">Accumulated score</span>
+                </div>
+            </section>
+
+            <!-- Activity Ledger Card -->
+            <div class="card">
+                <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-accent mb-xs">Filter & Audit</span>
+                        <h2>Recorded Activities</h2>
+                    </div>
+                    <a href="activities.html" class="btn btn-primary btn-sm">+ Log New Activity</a>
+                </div>
+
+                <!-- Filters Toolbar -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; background: var(--color-off-white); padding: 1rem; border-radius: var(--radius-md);">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="impactFilter" class="text-xs font-semibold text-medium">Filter by Impact Category</label>
+                        <select id="impactFilter" class="form-control">
+                            <option value="All">All Impact Categories</option>
+                            <option value="High">High Impact (&gt; 5 kg)</option>
+                            <option value="Medium">Medium Impact (1 – 5 kg)</option>
+                            <option value="Low">Low Impact (&lt; 1 kg)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="activityFilter" class="text-xs font-semibold text-medium">Filter by Activity Type</label>
+                        <select id="activityFilter" class="form-control">
+                            <option value="All">All Activity Types</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Ledger Table / List -->
+                <div id="historyContainer" class="recent-activities-list">
+                    <p class="loading-state">Loading your activity history...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/history.js"></script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenProof — CarbEarn Tree Stewardship</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+    <header class="navbar">
+        <a href="dashboard.html" class="logo">
+            <span class="logo-mark">🌱</span> CarbEarn
+        </a>
+        <nav class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="activities.html">Activities</a>
+            <a href="history.html">History</a>
+            <a href="greenproof.html" class="active">GreenProof</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="#" id="logoutButton" class="btn btn-outline btn-sm">Sign Out</a>
+        </nav>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="container">
+            <!-- Header with Official GreenProof Heading -->
+            <section class="welcome-header">
+                <span class="badge badge-accent mb-xs">Tree Stewardship Registry</span>
+                <h1>Every tree deserves more than a planting day.</h1>
+                <p class="text-medium">
+                    GreenProof ensures planted saplings receive persistent irrigation, crown monitoring, and verified health follow-ups. Track survival rates and earn verified carbon stewardship points.
+                </p>
+            </section>
+
+            <!-- GreenProof Summary Indicators -->
+            <section class="stats-grid mb-2xl">
+                <div class="stat-card">
+                    <p class="stat-label">Registered Trees</p>
+                    <h2 id="totalTreesCount" class="stat-value">0</h2>
+                    <span class="stat-meta">Saplings under stewardship</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Surviving Trees</p>
+                    <h2 class="stat-value text-primary">
+                        <span id="survivingCount">0</span>
+                    </h2>
+                    <span class="stat-meta">Actively verified healthy</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Needs Attention</p>
+                    <h2 id="attentionCount" class="stat-value text-error">0</h2>
+                    <span class="stat-meta">Pending urgent care</span>
+                </div>
+
+                <div class="stat-card">
+                    <p class="stat-label">Verified Inspections</p>
+                    <h2 id="verifiedInspCount" class="stat-value text-primary-deep">0</h2>
+                    <span class="stat-meta">Approved by coordinator</span>
+                </div>
+            </section>
+
+            <div class="dashboard-grid">
+                <!-- Main Column: Tree Directory & Care Timeline -->
+                <div class="dashboard-main">
+                    <!-- Tree Cards Section -->
+                    <div class="card">
+                        <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <span class="badge badge-primary mb-xs">Registry</span>
+                                <h2>Your Registered Trees</h2>
+                            </div>
+                            <button type="button" id="openRegisterTreeBtn" class="btn btn-primary btn-sm">
+                                + Register New Tree
+                            </button>
+                        </div>
+
+                        <div id="treesContainer">
+                            <p class="loading-state">Loading your GreenProof tree registry...</p>
+                        </div>
+                    </div>
+
+                    <!-- Care History & Inspection Details (Modal or Panel) -->
+                    <div id="treeDetailPanel" class="card" style="display: none;">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-accent mb-xs">Stewardship Ledger</span>
+                                <h3 id="detailTreeTitle">Tree Care History</h3>
+                            </div>
+                            <button type="button" id="closeDetailBtn" class="btn btn-outline btn-sm">Close</button>
+                        </div>
+
+                        <div id="treeDetailContent" class="mb-lg"></div>
+
+                        <!-- Add Care Inspection Form -->
+                        <div style="background: var(--color-cream); border: 1px solid var(--color-light-sage); border-radius: var(--radius-lg); padding: 1.5rem;">
+                            <h4 style="margin-bottom: 0.75rem; color: var(--color-primary-deep);">Log Health Inspection</h4>
+                            <form id="careLogForm" novalidate>
+                                <input type="hidden" id="careTreeId">
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div class="form-group">
+                                        <label for="inspectionDate">Inspection Date</label>
+                                        <input type="date" id="inspectionDate" class="form-control" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="healthStatus">Observed Health Status</label>
+                                        <select id="healthStatus" class="form-control" required>
+                                            <option value="Healthy">Healthy (Vibrant foliage, moist soil)</option>
+                                            <option value="Fair">Fair (Minor leaf dryness, stable)</option>
+                                            <option value="Poor">Poor (Wilting, needs mulch/water)</option>
+                                            <option value="Critical">Critical (Severe defoliation/pest stress)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="careNotes">Care Actions & Observations</label>
+                                    <textarea
+                                        id="careNotes"
+                                        class="form-control"
+                                        rows="2"
+                                        placeholder="e.g. Applied 5 liters drip irrigation, weeded base circumference, added organic mulch."
+                                    ></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="evidenceUrl">Photo / Evidence URL (optional)</label>
+                                    <input
+                                        type="url"
+                                        id="evidenceUrl"
+                                        class="form-control"
+                                        placeholder="https://example.com/tree-inspection-photo.jpg"
+                                    >
+                                </div>
+
+                                <button type="submit" id="submitCareBtn" class="btn btn-primary">
+                                    Submit Inspection for Verification
+                                </button>
+                                <div id="careMessage" class="form-message" role="status" aria-live="polite"></div>
+                            </form>
+                        </div>
+
+                        <!-- Care History Timeline -->
+                        <div class="care-timeline mt-xl">
+                            <h4 style="margin-bottom: 1rem; color: var(--color-dark-text);">Historical Inspections</h4>
+                            <div id="careLogsTimeline">
+                                <p class="loading-state">Loading inspection records...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Registration Form & Stewardship Guide -->
+                <div class="dashboard-sidebar">
+                    <!-- Tree Registration Modal / Card -->
+                    <div id="registerTreeCard" class="card">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-accent mb-xs">Stewardship</span>
+                                <h3>Register New Sapling</h3>
+                            </div>
+                        </div>
+
+                        <form id="registerTreeForm" novalidate>
+                            <div class="form-group">
+                                <label for="species">Tree Species</label>
+                                <input
+                                    type="text"
+                                    id="species"
+                                    class="form-control"
+                                    placeholder="e.g. Neem, Peepal, Banyan, Oak"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="location">Campus Location</label>
+                                <input
+                                    type="text"
+                                    id="location"
+                                    class="form-control"
+                                    placeholder="e.g. North Quad, near Library"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="plantingDate">Planting Date</label>
+                                <input
+                                    type="date"
+                                    id="plantingDate"
+                                    class="form-control"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="treeNotes">Optional Notes</label>
+                                <textarea
+                                    id="treeNotes"
+                                    class="form-control"
+                                    rows="2"
+                                    placeholder="e.g. Planted with Environmental Club cohort, soil condition sandy loam."
+                                ></textarea>
+                            </div>
+
+                            <button type="submit" id="registerTreeBtn" class="btn btn-primary btn-block">
+                                Register Sapling
+                            </button>
+
+                            <div id="treeMessage" class="form-message" role="status" aria-live="polite"></div>
+                        </form>
+                    </div>
+
+                    <!-- Stewardship Principles Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Stewardship Principles</h3>
+                        </div>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem; color: var(--color-medium-text);">
+                            <li>
+                                <strong style="color: var(--color-primary-deep);">1. Weekly Irrigation:</strong> Ensure young saplings receive 5-10 liters twice weekly during non-monsoon periods.
+                            </li>
+                            <li>
+                                <strong style="color: var(--color-primary-deep);">2. Mulching:</strong> Maintain a 3-inch organic mulch ring around the base to retain soil moisture.
+                            </li>
+                            <li>
+                                <strong style="color: var(--color-primary-deep);">3. Regular Inspection:</strong> Submit a monthly health check to verify ongoing survival with coordinators.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logo">🌱 CarbEarn</div>
+        <p class="tagline" style="font-style: italic; color: var(--color-sage);">
+            Carbon consciousness converted into capital.
+        </p>
+        <p class="copyright">© 2026 CarbEarn. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/greenproof.js"></script>
+</body>
+</html>
