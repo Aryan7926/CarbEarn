@@ -4,6 +4,35 @@
    ========================================================================== */
 
 /* --- Tab Pills Switcher --- */
+.admin-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.admin-tab-btn:hover {
+  color: var(--slate-900);
+  background: rgba(241, 245, 249, 0.8);
+}
+
+.admin-tab-btn.active {
+  color: var(--emerald-800);
+  background: var(--emerald-100);
+  font-weight: 700;
+}
+
+.admin-section {
+  animation: fadeIn 0.3s ease;
+}
+
 .tab-pill {
   border-radius: var(--radius-full);
   padding: 0.5rem 1.15rem;

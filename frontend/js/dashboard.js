@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("profileEmail").textContent = user.email || "—";
     document.getElementById("profileCollege").textContent = user.college || "Not specified";
 
+    const certName = document.getElementById("certContributorName");
+    if (certName) certName.textContent = user.name || "Learner";
+
     // Bind logout button
     const logoutBtn = document.getElementById("logoutButton");
     if (logoutBtn) {
@@ -19,10 +22,40 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    await Promise.all([
-        loadDashboardData(user.id),
-        loadRecommendation(user.id)
-    ]);
+    // Modal elements
+    const certModal = document.getElementById("certificateModal");
+    const openCertBtn = document.getElementById("btnOpenCertModal");
+    const closeCertBtn = document.getElementById("btnCloseCertModal");
+    const dismissCertBtn = document.getElementById("btnDismissCertModal");
+
+    if (openCertBtn && certModal) {
+        openCertBtn.addEventListener("click", () => {
+            certModal.style.display = "flex";
+        });
+    }
+
+    if (closeCertBtn && certModal) {
+        closeCertBtn.addEventListener("click", () => {
+            certModal.style.display = "none";
+        });
+    }
+
+    if (dismissCertBtn && certModal) {
+        dismissCertBtn.addEventListener("click", () => {
+            certModal.style.display = "none";
+        });
+    }
+
+    // Close on backdrop click
+    if (certModal) {
+        certModal.addEventListener("click", (e) => {
+            if (e.target === certModal) {
+                certModal.style.display = "none";
+            }
+        });
+    }
+
+    await loadDashboardData(user.id);
 });
 
 async function loadDashboardData(userId) {
@@ -30,11 +63,30 @@ async function loadDashboardData(userId) {
         const data = await CarbEarn.get(`/api/dashboard/${userId}`);
         const { summary, impact_breakdown, recent_activities } = data;
 
-        // Populate statistics with smooth animated counters
+        // Animate key stats
         CarbEarn.animateValue(document.getElementById("totalActivities"), 0, summary.total_activities || 0);
         CarbEarn.animateValue(document.getElementById("totalCO2"), 0, summary.total_co2_saved || 0);
         CarbEarn.animateValue(document.getElementById("totalPoints"), 0, summary.total_points || 0);
         document.getElementById("overallImpact").textContent = summary.overall_impact || "Low";
+
+        // Carbon Currency Treasury Display
+        const cc = summary.carbon_currency || {};
+        const verifiedCBC = Number(cc.verified_cbc !== undefined ? cc.verified_cbc : summary.total_co2_saved || 0);
+        const pendingCBC = Number(cc.pending_cbc || 0);
+        const fiatINR = Number(cc.inr_valuation !== undefined ? cc.inr_valuation : (verifiedCBC * 2.50));
+
+        CarbEarn.animateValue(document.getElementById("treasuryVerifiedCBC"), 0, verifiedCBC);
+        document.getElementById("treasuryPendingCBC").innerHTML = `${pendingCBC.toFixed(3)} <small style="font-size: 0.75rem;">CBC</small>`;
+        const fiatElem = document.getElementById("treasuryFiatINR");
+        if (fiatElem) fiatElem.textContent = `₹${fiatINR.toFixed(2)}`;
+
+        // Update Certificate modal preview
+        const certCO2 = document.getElementById("certCO2Value");
+        const certCBC = document.getElementById("certCBCValue");
+        const certHash = document.getElementById("certLedgerHash");
+        if (certCO2) certCO2.textContent = `${Number(summary.total_co2_saved || 0).toFixed(2)} kg`;
+        if (certCBC) certCBC.textContent = `${verifiedCBC.toFixed(3)} CBC`;
+        if (certHash) certHash.textContent = `0x${Math.abs(hashCode(`${userId}:${verifiedCBC}:${Date.now()}`)).toString(16).toUpperCase()}${Math.random().toString(16).substring(2, 10).toUpperCase()}`;
 
         // Impact progress bars
         const low = Number(impact_breakdown.low || 0);
@@ -77,7 +129,7 @@ function renderRecentActivities(activities) {
 
     if (!activities || activities.length === 0) {
         container.innerHTML = `
-            <div class="empty-state text-center" style="padding: 2rem 1rem;">
+            <div class="empty-state text-center" style="padding: 2.5rem 1rem;">
                 <p class="text-medium mb-md">No green activities recorded yet.</p>
                 <a href="activities.html" class="btn btn-primary btn-sm">Log Your First Activity</a>
             </div>
@@ -87,49 +139,36 @@ function renderRecentActivities(activities) {
 
     container.innerHTML = activities.map(act => {
         const impactClass = (act.impact || "low").toLowerCase();
+        const isVerified = act.verification_status === "Verified";
+        const cbcAmount = Number(act.carbon_currency !== undefined ? act.carbon_currency : act.co2_saved).toFixed(3);
+
+        const statusPill = isVerified
+            ? `<span class="status-badge badge-verified">✓ Authorized & Minted</span>`
+            : `<span class="status-badge badge-pending">⏳ Pending Audit</span>`;
+
         return `
-            <div class="activity-item">
-                <div class="activity-icon">🌿</div>
+            <div class="activity-item card-animated">
+                <div class="activity-icon float-icon">🌿</div>
                 <div class="activity-details">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
                         <span class="activity-name">${escapeHtml(act.activity_name)}</span>
-                        <span class="status-badge badge-${impactClass}">${act.impact} Impact</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            ${statusPill}
+                            <span class="status-badge badge-${impactClass}">${act.impact}</span>
+                        </div>
                     </div>
                     <div class="activity-meta">
-                        ${act.quantity} ${escapeHtml(act.unit)} • ${act.frequency}x / week • ${formatDate(act.activity_date)}
+                        ${act.quantity} ${escapeHtml(act.unit)} • ${act.frequency}x/week • ${formatDate(act.activity_date)}
                     </div>
-                    <div class="activity-stats">
-                        <span class="activity-stat">Mitigated: <strong>${Number(act.co2_saved).toFixed(2)} kg CO₂</strong></span>
+                    <div class="activity-stats" style="margin-top: 6px; display: flex; gap: 12px; font-size: 0.85rem;">
+                        <span class="activity-stat">Avoided: <strong style="color: var(--emerald-800);">${Number(act.co2_saved).toFixed(2)} kg CO₂</strong></span>
+                        <span class="activity-stat">Carbon Currency: <strong style="color: var(--emerald-600); font-weight: 700;">+${cbcAmount} CBC</strong></span>
                         <span class="activity-stat">Points: <strong>+${act.points}</strong></span>
-                        ${act.ml_prediction ? `<span class="activity-stat text-xs">ML Classification: <em>${escapeHtml(act.ml_prediction)}</em></span>` : ""}
                     </div>
                 </div>
             </div>
         `;
     }).join("");
-}
-
-async function loadRecommendation(userId) {
-    const container = document.getElementById("recommendationContent");
-    try {
-        const data = await CarbEarn.get(`/api/recommendations/${userId}`);
-
-        container.innerHTML = `
-            <div style="border-left: 3px solid var(--color-primary); padding-left: 1rem;">
-                <p style="font-weight: 600; color: var(--color-primary-deep); margin-bottom: 0.5rem; line-height: 1.4;">
-                    "${escapeHtml(data.recommendation)}"
-                </p>
-                <p class="text-sm text-medium mb-sm">${escapeHtml(data.reason)}</p>
-                <div class="text-xs text-light">
-                    Based on pattern: <strong>${escapeHtml(data.based_on_activity)}</strong>
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        container.innerHTML = `
-            <p class="text-sm text-light">Personalized suggestions will update as more activities are logged.</p>
-        `;
-    }
 }
 
 function formatDate(dateStr) {
@@ -140,6 +179,16 @@ function formatDate(dateStr) {
         day: "numeric",
         year: "numeric"
     });
+}
+
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+    }
+    return hash;
 }
 
 function escapeHtml(str) {

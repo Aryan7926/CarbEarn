@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Activity — CarbEarn</title>
+    <title>Universal Carbon Activity & Currency Calculator — CarbEarn</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="dashboard-page">
@@ -25,42 +25,87 @@
     <main class="dashboard-content">
         <div class="container">
             <section class="welcome-header">
-                <span class="badge badge-primary mb-xs">Environmental Actions</span>
-                <h1>Record Your <span class="text-primary-deep">Green Activity</span></h1>
-                <p class="text-medium">Log your daily or weekly sustainable actions. Carbon savings and points are calculated automatically using verified emission factors.</p>
+                <span class="badge badge-primary mb-xs">Universal Carbon Engine</span>
+                <h1>Quantify Any <span class="text-primary-deep">Green Action</span> Into Carbon Currency</h1>
+                <p class="text-medium">Input any sustainable activity in natural language or choose from verified benchmarks. Compute instant CO₂ mitigation and mint real Carbon Currency (CBC).</p>
             </section>
 
             <div class="dashboard-grid">
                 <!-- Activity Entry Form -->
                 <div class="dashboard-main">
-                    <div class="card">
+                    <div class="card card-animated">
                         <div class="card-header">
                             <div>
-                                <span class="badge badge-accent mb-xs">New Entry</span>
-                                <h2>Log Green Action</h2>
+                                <span class="badge badge-accent mb-xs">Dynamic Activity Entry</span>
+                                <h2>Record & Mint Carbon Action</h2>
                             </div>
                         </div>
 
+                        <!-- Mode Switcher -->
+                        <div class="mode-switch-wrapper" role="tablist">
+                            <button type="button" class="mode-switch-btn active" id="btnModeUniversal">
+                                <span>✨ Universal Free-Text Mode</span>
+                            </button>
+                            <button type="button" class="mode-switch-btn" id="btnModeCatalog">
+                                <span>📋 Standard Catalog Mode</span>
+                            </button>
+                        </div>
+
                         <form id="activityForm" novalidate>
-                            <!-- Activity Select -->
-                            <div class="form-group">
-                                <label for="activity">Select Green Activity</label>
-                                <select id="activity" class="form-control" required>
-                                    <option value="">Loading activities catalog...</option>
-                                </select>
+                            <!-- UNIVERSAL FREE-TEXT MODE CONTAINER -->
+                            <div id="universalModeSection">
+                                <div class="form-group">
+                                    <label for="activityText">
+                                        Describe Any Green Activity
+                                        <span class="text-light text-xs font-normal">(AI & Heuristic Carbon Engine analyzes any prompt)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="activityText"
+                                        class="form-control"
+                                        placeholder="e.g. Took 25 km electric train instead of car, or Composted 6 kg food scraps"
+                                        autocomplete="off"
+                                    >
+                                </div>
+
+                                <!-- Quick Inspiration Prompt Chips -->
+                                <div>
+                                    <span class="text-xs font-semibold text-medium">Instant Activity Templates (Click to Test):</span>
+                                    <div class="prompt-chips-container">
+                                        <span class="prompt-chip" data-text="Took electric train commute for 25 km" data-qty="25" data-freq="5">🚆 25km Train Commute</span>
+                                        <span class="prompt-chip" data-text="Ate vegan plant-based meals replacing beef" data-qty="4" data-freq="3">🥗 4 Vegan Lunches</span>
+                                        <span class="prompt-chip" data-text="Generated clean solar power from rooftop PV" data-qty="18" data-freq="7">☀️ 18 kWh Solar</span>
+                                        <span class="prompt-chip" data-text="Composted organic food scraps at community garden" data-qty="6" data-freq="2">🍂 6kg Composting</span>
+                                        <span class="prompt-chip" data-text="Bicycled to college campus instead of motor vehicle" data-qty="12" data-freq="4">🚲 12km Bicycle</span>
+                                        <span class="prompt-chip" data-text="Washed laundry loads using cold water cycle" data-qty="3" data-freq="1">🧺 Cold Water Wash</span>
+                                        <span class="prompt-chip" data-text="Worked remotely from home skipping daily vehicular drive" data-qty="28" data-freq="3">🏠 28km Remote Work</span>
+                                        <span class="prompt-chip" data-text="Planted native neem sapling in campus park" data-qty="2" data-freq="1">🌳 2 Trees Planted</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Description Callout -->
-                            <div id="activityDescBox" class="card mb-lg" style="background: var(--color-off-white); border: 1px dashed var(--color-light-sage); display: none;">
-                                <strong id="selectedActivityTitle" style="color: var(--color-primary-deep); display: block; margin-bottom: 0.25rem;"></strong>
-                                <p id="activityDescription" class="text-sm text-medium"></p>
+                            <!-- STANDARD CATALOG MODE CONTAINER -->
+                            <div id="catalogModeSection" style="display: none;">
+                                <div class="form-group">
+                                    <label for="activity">Select Catalog Benchmark</label>
+                                    <select id="activity" class="form-control">
+                                        <option value="">Loading activities catalog...</option>
+                                    </select>
+                                </div>
+
+                                <!-- Description Callout -->
+                                <div id="activityDescBox" class="card mb-md" style="background: var(--color-off-white); border: 1px dashed var(--color-light-sage); display: none;">
+                                    <strong id="selectedActivityTitle" style="color: var(--color-primary-deep); display: block; margin-bottom: 0.25rem;"></strong>
+                                    <p id="activityDescription" class="text-sm text-medium"></p>
+                                </div>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <!-- Quantity -->
+                            <!-- Numeric Quantity & Frequency -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                                 <div class="form-group">
                                     <label for="quantity">
-                                        Quantity <span id="unitText" class="text-light text-xs font-normal">(select an activity)</span>
+                                        Activity Volume / Quantity
+                                        <span id="unitText" class="text-light text-xs font-normal">(units)</span>
                                     </label>
                                     <input
                                         type="number"
@@ -68,12 +113,11 @@
                                         class="form-control"
                                         min="0.01"
                                         step="0.01"
-                                        placeholder="e.g. 5"
+                                        placeholder="e.g. 15"
                                         required
                                     >
                                 </div>
 
-                                <!-- Frequency -->
                                 <div class="form-group">
                                     <label for="frequency">Weekly Frequency</label>
                                     <input
@@ -90,7 +134,7 @@
                                 </div>
                             </div>
 
-                            <!-- Date -->
+                            <!-- Activity Date -->
                             <div class="form-group">
                                 <label for="activityDate">Activity Date</label>
                                 <input
@@ -101,32 +145,49 @@
                                 >
                             </div>
 
-                            <!-- Live Interactive Impact Assessment -->
-                            <div class="card mb-lg" style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-lg); padding: 1.25rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <!-- Live Environmental & Carbon Currency Preview Box -->
+                            <div class="calc-breakdown-card">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
-                                        <span class="badge badge-accent">Impact Assessment</span>
-                                        <div style="font-weight: 700; color: var(--slate-900); font-size: 1.05rem; margin-top: 4px;">Verified Environmental Impact</div>
+                                        <span class="badge badge-accent">Live Carbon Valuation</span>
+                                        <div style="font-weight: 800; color: var(--slate-900); font-size: 1.1rem; margin-top: 4px;" id="liveActionTitle">
+                                            Environmental Impact & Carbon Currency Preview
+                                        </div>
+                                        <div id="liveBaselineComparison" class="text-xs text-medium" style="margin-top: 2px;">
+                                            Benchmarked against standard conventional fossil baseline
+                                        </div>
                                     </div>
                                     <span id="mlPreviewBadge" class="status-badge badge-active">—</span>
                                 </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed rgba(16, 185, 129, 0.25);">
+
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed rgba(16, 185, 129, 0.25);">
                                     <div>
-                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 600;">Est. Avoided CO₂</span>
-                                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--emerald-700);" id="liveEstCO2">—</div>
+                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 700;">Avoided Emissions</span>
+                                        <div style="font-size: 1.55rem; font-weight: 800; color: var(--emerald-700);" id="liveEstCO2">0.00 <small style="font-size: 0.8rem; color: var(--slate-500);">kg</small></div>
                                     </div>
                                     <div>
-                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 600;">Est. Carbon Points</span>
-                                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--slate-900);" id="liveEstPoints">—</div>
+                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 700;">Carbon Currency (CBC)</span>
+                                        <div style="font-size: 1.55rem; font-weight: 800; color: var(--emerald-600);" id="liveEstCBC">0.000 <small style="font-size: 0.8rem; color: var(--emerald-600);">CBC</small></div>
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 700;">Market Value</span>
+                                        <div style="font-size: 1.55rem; font-weight: 800; color: var(--emerald-700);" id="liveEstFiat">₹0.00</div>
                                     </div>
                                 </div>
-                                <p id="mlPreviewNote" style="font-size: 0.8rem; color: var(--slate-500); margin-top: 0.6rem;">
-                                    Calculated with verified emission factors and certified ecological benchmarks.
-                                </p>
+
+                                <!-- Mathematical Formula Breakdown -->
+                                <div class="formula-display" id="liveFormulaEquation">
+                                    <span>∑</span> <span id="formulaText">Enter activity parameters to compute certified greenhouse mitigation</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--slate-500);">
+                                    <span>Standard: ISO 14064-2 & EPA GHG Protocol</span>
+                                    <span style="color: var(--color-warning); font-weight: 600;">Requires Administrator Authorization to mint</span>
+                                </div>
                             </div>
 
-                            <button type="submit" id="submitActivityBtn" class="btn btn-primary btn-lg btn-block">
-                                Save Green Activity
+                            <button type="submit" id="submitActivityBtn" class="btn btn-primary btn-lg btn-block" style="box-shadow: var(--shadow-glow);">
+                                Submit for Authorization & Mint Carbon Currency
                             </button>
 
                             <div id="activityMessage" class="form-message" role="status" aria-live="polite"></div>
@@ -134,54 +195,96 @@
                     </div>
 
                     <!-- Success Confirmation Banner -->
-                    <div id="successCard" class="card mt-xl" style="display: none; border-color: var(--color-primary); background: var(--color-white);">
-                        <div class="card-header" style="border-bottom: 1px solid var(--color-light-sage); padding-bottom: 1rem;">
+                    <div id="successCard" class="card mt-xl card-animated" style="display: none; border: 1.5px solid var(--emerald-500); background: #ffffff;">
+                        <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem;">
                             <div>
-                                <span class="badge badge-primary mb-xs">Success</span>
-                                <h2>Activity Recorded Successfully</h2>
+                                <span class="badge badge-primary mb-xs">Verification In Progress</span>
+                                <h2>Activity Submitted for Administrator Authorization</h2>
+                                <p class="text-sm text-medium">Your green mitigation was successfully calculated and placed in the Platform Administrator Queue for audit and official carbon currency issuance.</p>
                             </div>
                         </div>
 
                         <div class="stats-grid mb-lg" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem;">
                             <div class="stat-card" style="padding: 1rem;">
-                                <span class="stat-label">CO₂ Mitigated</span>
+                                <span class="stat-label">Mitigated CO₂</span>
                                 <h3 id="savedCO2" class="text-primary-deep" style="font-size: 1.5rem; margin: 0.25rem 0;">0.00</h3>
-                                <span class="stat-meta">kg</span>
+                                <span class="stat-meta">kg CO₂e</span>
+                            </div>
+                            <div class="stat-card" style="padding: 1rem; border-left: 3px solid var(--emerald-500);">
+                                <span class="stat-label">Carbon Currency</span>
+                                <h3 id="savedCBC" class="text-primary" style="font-size: 1.5rem; margin: 0.25rem 0;">0.000</h3>
+                                <span class="stat-meta">CBC (Pending Escrow)</span>
                             </div>
                             <div class="stat-card" style="padding: 1rem;">
-                                <span class="stat-label">Points Awarded</span>
-                                <h3 id="earnedPoints" class="text-primary" style="font-size: 1.5rem; margin: 0.25rem 0;">0</h3>
-                                <span class="stat-meta">points</span>
+                                <span class="stat-label">Market Value</span>
+                                <h3 id="savedFiat" class="text-dark" style="font-size: 1.5rem; margin: 0.25rem 0;">₹0.00</h3>
+                                <span class="stat-meta">Verified Valuation</span>
                             </div>
                             <div class="stat-card" style="padding: 1rem;">
-                                <span class="stat-label">Calculated Impact</span>
-                                <h3 id="activityImpact" class="text-dark" style="font-size: 1.5rem; margin: 0.25rem 0;">—</h3>
-                                <span class="stat-meta">environmental</span>
-                            </div>
-                            <div class="stat-card" style="padding: 1rem;">
-                                <span class="stat-label">Projected Impact</span>
-                                <h3 id="mlResultBadge" class="text-accent" style="font-size: 1.5rem; margin: 0.25rem 0;">—</h3>
-                                <span class="stat-meta">Verified Tier</span>
+                                <span class="stat-label">Audit Status</span>
+                                <h3 style="font-size: 1.25rem; margin: 0.25rem 0;">
+                                    <span class="status-badge badge-pending">⏳ Pending Audit</span>
+                                </h3>
+                                <span class="stat-meta">Administrator Review</span>
                             </div>
                         </div>
 
+                        <!-- Cryptographic Proof Box -->
+                        <div class="cert-preview-box mb-lg">
+                            <div class="cert-stamp">
+                                <span>ISO</span>
+                                <span>14064-2</span>
+                                <span>VERIFIED</span>
+                            </div>
+                            <strong style="color: var(--emerald-900); font-size: 0.95rem; display: block; margin-bottom: 4px;">Cryptographic Carbon Ledger Proof</strong>
+                            <div class="text-xs text-medium mb-xs">Certificate Serial: <strong id="certSerial">—</strong></div>
+                            <div class="hash-pill" id="certHash">—</div>
+                        </div>
+
                         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                            <button type="button" id="logAnotherBtn" class="btn btn-secondary">Log Another Action</button>
-                            <a href="dashboard.html" class="btn btn-primary">View in Dashboard</a>
+                            <button type="button" id="logAnotherBtn" class="btn btn-secondary">Record Another Activity</button>
+                            <a href="dashboard.html" class="btn btn-primary">Open Dashboard & Wallet</a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Available Activities Reference Sidebar -->
+                <!-- Reference Sidebar -->
                 <div class="dashboard-sidebar">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <span class="badge badge-primary mb-xs">Reference</span>
-                                <h3>Available Activities</h3>
+                    <!-- Real-World Carbon Currency Tokenomics Card -->
+                    <div class="currency-treasury-card mb-lg">
+                        <div class="currency-header">
+                            <span class="currency-badge">🌿 Carbon Standard</span>
+                            <span style="font-size: 0.8rem; color: #a7f3d0;">VCM Benchmark</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.75);">CarbEarn Carbon Currency (CBC)</div>
+                        <div class="currency-main-value">
+                            <span class="currency-amount">1.00</span>
+                            <span class="currency-symbol-tag">CBC = 1 kg CO₂e</span>
+                        </div>
+                        <div class="text-xs" style="color: rgba(255, 255, 255, 0.65); line-height: 1.4;">
+                            Pegged directly to avoided and sequestered carbon dioxide equivalent (tCO₂e / kg).
+                        </div>
+                        <div class="currency-subvalues">
+                            <div class="currency-sub-box">
+                                <div class="currency-sub-label">Spot Rate</div>
+                                <div class="currency-sub-num">₹2.50 <small style="font-size: 0.7rem;">/ CBC</small></div>
+                            </div>
+                            <div class="currency-sub-box">
+                                <div class="currency-sub-label">Per Metric Ton Value</div>
+                                <div class="currency-sub-num">₹2,500 <small style="font-size: 0.7rem;">/ 1,000 kg</small></div>
                             </div>
                         </div>
-                        <p class="text-xs text-light mb-md">Standard emission factors per activity unit:</p>
+                    </div>
+
+                    <!-- Available Catalog Reference Card -->
+                    <div class="card card-animated">
+                        <div class="card-header">
+                            <div>
+                                <span class="badge badge-primary mb-xs">Reference Library</span>
+                                <h3>Standard Benchmarks</h3>
+                            </div>
+                        </div>
+                        <p class="text-xs text-light mb-md">Certified emission reduction factors per unit:</p>
                         <div id="activityList" class="recent-activities-list">
                             <p class="loading-state">Loading activities catalog...</p>
                         </div>

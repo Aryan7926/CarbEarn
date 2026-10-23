@@ -23,6 +23,7 @@ const activityController = require("../controllers/activityController");
 const dashboardController = require("../controllers/dashboardController");
 const leaderboardController = require("../controllers/leaderboardController");
 const greenproofController = require("../controllers/greenproofController");
+const adminController = require("../controllers/adminController");
 
 // Helper mock request and response
 function createMockReqRes(options = {}) {
@@ -253,7 +254,74 @@ async function runAllTests() {
         assert.strictEqual(res.statusCode, 400);
     });
 
-    await test("Fetch student's activity history accurately", async () => {
+    await test("Dynamic Universal Calculator computes CO2 and Carbon Currency (CBC) for free-text activity", async () => {
+        const { req, res } = createMockReqRes({
+            body: {
+                activity_text: "Took electric metro train for 20 km instead of driving car",
+                quantity: 20,
+                frequency: 5
+            }
+        });
+
+        await activityController.calculateDynamicActivity(req, res);
+        assert.strictEqual(res.statusCode, 200);
+        assert(res.data.calculation.co2_saved > 0, "Calculated CO2 must be positive");
+        assert.strictEqual(res.data.calculation.carbon_currency, res.data.calculation.co2_saved);
+        assert(res.data.calculation.valuation.usd > 0, "Market valuation in USD must be positive");
+        assert(res.data.calculation.certificate.hash, "Must generate cryptographic certificate hash");
+    });
+
+    let loggedDynamicActivityId = null;
+
+    await test("Record dynamic custom activity with Carbon Currency into Pending authorization queue", async () => {
+        const { req, res } = createMockReqRes({
+            user: { id: studentUser.id, role: "USER" },
+            body: {
+                activity_text: "Ate vegan lunch substituting beef burger",
+                quantity: 3,
+                frequency: 2,
+                activity_date: "2026-10-16"
+            }
+        });
+
+        await activityController.addUserActivity(req, res);
+        assert.strictEqual(res.statusCode, 201);
+        assert.strictEqual(res.data.activity.verification_status, "Pending");
+        assert(res.data.activity.carbon_currency > 0, "Must calculate Carbon Currency (CBC)");
+        assert(res.data.activity.certificate.hash, "Must generate certificate hash");
+        loggedDynamicActivityId = res.data.activity.id;
+    });
+
+    await test("Admin lists pending user activities awaiting authorization", async () => {
+        const { req, res } = createMockReqRes({
+            user: { id: adminUser.id, role: "ADMIN" }
+        });
+
+        await adminController.getPendingActivities(req, res);
+        assert.strictEqual(res.statusCode, 200);
+        assert(res.data.activities.length >= 1, "Must find pending activities");
+        const match = res.data.activities.find(a => a.id === loggedDynamicActivityId);
+        assert(match, "Submitted dynamic activity must be in admin pending queue");
+        assert.strictEqual(match.student_name, studentUser.name);
+    });
+
+    await test("Admin authorizes and verifies user activity, minting Carbon Currency", async () => {
+        const { req, res } = createMockReqRes({
+            params: { id: loggedDynamicActivityId },
+            user: { id: adminUser.id, role: "ADMIN" },
+            body: {
+                status: "Verified",
+                review_notes: "Dietary substitution calculation verified against IPCC food emissions."
+            }
+        });
+
+        await adminController.verifyActivity(req, res);
+        assert.strictEqual(res.statusCode, 200);
+        assert.strictEqual(res.data.verification_status, "Verified");
+        assert(res.data.carbon_currency > 0, "Authorized Carbon Currency returned");
+    });
+
+    await test("Fetch student's activity history accurately with Carbon Currency", async () => {
         const { req, res } = createMockReqRes({
             params: { userId: studentUser.id },
             user: { id: studentUser.id, role: "USER" }
@@ -261,8 +329,9 @@ async function runAllTests() {
 
         await activityController.getUserActivityHistory(req, res);
         assert.strictEqual(res.statusCode, 200);
-        assert(res.data.activities.length >= 1, "Should contain at least 1 activity");
-        assert.strictEqual(res.data.activities[0].activity_name, "Cycling");
+        assert(res.data.activities.length >= 2, "Should contain multiple activities");
+        assert(res.data.totals.total_cbc > 0, "Must calculate total CBC in history");
+        assert(res.data.totals.verified_cbc > 0, "Must reflect authorized CBC in history");
     });
 
     // -------------------------------------------------------------------------

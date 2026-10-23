@@ -6,6 +6,7 @@
  */
 
 const pool = require("../config/db");
+const crypto = require("crypto");
 
 // ---------------------------------------------------------------------------
 // 1. Register a new tree/sapling
@@ -352,7 +353,11 @@ const reviewCareLog = async (req, res) => {
         const reviewerId = req.user.id;
         const { verification_status, review_notes } = req.body;
 
-        if (!["Verified", "Rejected"].includes(verification_status)) {
+        let normalizedStatus = verification_status;
+        if (normalizedStatus === "Correct") normalizedStatus = "Verified";
+        if (normalizedStatus === "Incorrect") normalizedStatus = "Rejected";
+
+        if (!["Verified", "Rejected"].includes(normalizedStatus)) {
             return res.status(400).json({
                 message: "verification_status must be 'Verified' or 'Rejected'."
             });
@@ -373,43 +378,60 @@ const reviewCareLog = async (req, res) => {
             `UPDATE care_logs 
              SET verification_status = ?, reviewer_id = ?, review_notes = ?, reviewed_at = CURRENT_TIMESTAMP
              WHERE id = ?`,
-            [verification_status, reviewerId, review_notes ? review_notes.trim() : null, logId]
+            [normalizedStatus, reviewerId, review_notes ? review_notes.trim() : null, logId]
         );
 
         // If verified, award verification bonus points to user (e.g. 25 points for verified care inspection)
-        if (verification_status === "Verified") {
-            // Find Tree Planting activity ID
+        if (normalizedStatus === "Verified") {
+            // Find Tree Care activity ID (default to activity 5)
+            let activityId = 5;
             const [activities] = await pool.query(
-                "SELECT id, emission_factor FROM activities WHERE name = ? LIMIT 1",
-                ["Tree Planting"]
+                "SELECT id, emission_factor FROM activities WHERE name = ? OR name LIKE ? LIMIT 1",
+                ["Tree Care & Maintenance", "%Tree%"]
             );
 
             if (activities.length > 0) {
-                const activityId = activities[0].id;
-                // Add verified tree care activity bonus
-                await pool.query(
-                    `INSERT INTO user_activities 
-                     (user_id, activity_id, quantity, frequency, co2_saved, points, impact, ml_prediction, activity_date)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        log.user_id,
-                        activityId,
-                        1,
-                        1,
-                        2.50,
-                        25,
-                        "Medium",
-                        "Verified Tree Care",
-                        new Date().toISOString().split("T")[0]
-                    ]
-                );
+                activityId = activities[0].id;
             }
+
+            const certHash = crypto
+                .createHash("sha256")
+                .update(`care_verification-${log.user_id}-${logId}-${Date.now()}`)
+                .digest("hex");
+
+            // Add verified tree care activity bonus (awarding +25 points and 2.50 CBC)
+            await pool.query(
+                `INSERT INTO user_activities 
+                 (user_id, activity_id, quantity, frequency, co2_saved, points, impact, ml_prediction, activity_date, carbon_currency, verification_status, certificate_hash, notes)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    log.user_id,
+                    activityId,
+                    1,
+                    1,
+                    2.50,
+                    25,
+                    "Medium",
+                    "Verified Tree Care",
+                    new Date().toISOString().split("T")[0],
+                    2.50,
+                    "Verified",
+                    certHash,
+                    review_notes ? review_notes.trim() : "Verified tree inspection"
+                ]
+            );
+
+            // Ensure tree survival status is marked Surviving
+            await pool.query(
+                "UPDATE trees SET status = ? WHERE id = ?",
+                ["Surviving", log.tree_id]
+            );
         }
 
         res.json({
-            message: `Care log marked as ${verification_status}.`,
+            message: `Care log marked as ${normalizedStatus}.`,
             log_id: Number(logId),
-            verification_status,
+            verification_status: normalizedStatus,
             reviewed_at: new Date().toISOString()
         });
     } catch (error) {
@@ -462,7 +484,11 @@ const reviewTreeRegistration = async (req, res) => {
         const treeId = req.params.treeId;
         const { verification_status, admin_notes } = req.body;
 
-        if (!["Verified", "Rejected"].includes(verification_status)) {
+        let normalizedStatus = verification_status;
+        if (normalizedStatus === "Correct") normalizedStatus = "Verified";
+        if (normalizedStatus === "Incorrect") normalizedStatus = "Rejected";
+
+        if (!["Verified", "Rejected"].includes(normalizedStatus)) {
             return res.status(400).json({
                 message: "verification_status must be 'Verified' (Correct) or 'Rejected' (Incorrect)."
             });
@@ -478,49 +504,60 @@ const reviewTreeRegistration = async (req, res) => {
         }
 
         const tree = trees[0];
-        const newStatus = verification_status === "Verified" ? "Surviving" : "Rejected";
+        const newStatus = normalizedStatus === "Verified" ? "Surviving" : "Rejected";
 
         await pool.query(
             `UPDATE trees 
              SET verification_status = ?, status = ?, admin_notes = ? 
              WHERE id = ?`,
-            [verification_status, newStatus, admin_notes ? admin_notes.trim() : null, treeId]
+            [normalizedStatus, newStatus, admin_notes ? admin_notes.trim() : null, treeId]
         );
 
         // If verified as correct, award 50 Carbon Points and record planting activity!
-        if (verification_status === "Verified") {
+        if (normalizedStatus === "Verified") {
+            let activityId = 5;
             const [activities] = await pool.query(
-                "SELECT id FROM activities WHERE name = ? LIMIT 1",
-                ["Tree Planting"]
+                "SELECT id FROM activities WHERE name = ? OR name LIKE ? LIMIT 1",
+                ["Tree Care & Maintenance", "%Tree%"]
             );
 
             if (activities.length > 0) {
-                const activityId = activities[0].id;
-                await pool.query(
-                    `INSERT INTO user_activities 
-                     (user_id, activity_id, quantity, frequency, co2_saved, points, impact, ml_prediction, activity_date)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        tree.user_id,
-                        activityId,
-                        1,
-                        1,
-                        21.77,
-                        50,
-                        "High",
-                        "Verified Sapling Planting",
-                        new Date().toISOString().split("T")[0]
-                    ]
-                );
+                activityId = activities[0].id;
             }
+
+            const certHash = crypto
+                .createHash("sha256")
+                .update(`tree_planting-${tree.user_id}-${treeId}-${Date.now()}`)
+                .digest("hex");
+
+            await pool.query(
+                `INSERT INTO user_activities 
+                 (user_id, activity_id, quantity, frequency, co2_saved, points, impact, ml_prediction, activity_date, carbon_currency, verification_status, certificate_hash, notes)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    tree.user_id,
+                    activityId,
+                    1,
+                    1,
+                    21.77,
+                    50,
+                    "High",
+                    "Verified Sapling Planting",
+                    new Date().toISOString().split("T")[0],
+                    21.77,
+                    "Verified",
+                    certHash,
+                    admin_notes ? admin_notes.trim() : "Verified campus sapling planting"
+                ]
+            );
         }
 
         res.json({
-            message: `Tree registration successfully marked as ${verification_status === "Verified" ? "Correct (Verified)" : "Incorrect (Rejected)"}.`,
+            message: `Tree registration successfully marked as ${normalizedStatus === "Verified" ? "Correct (Verified)" : "Incorrect (Rejected)"}.`,
             tree_id: Number(treeId),
-            verification_status,
+            verification_status: normalizedStatus,
             status: newStatus,
-            points_awarded: verification_status === "Verified" ? 50 : 0
+            points_awarded: normalizedStatus === "Verified" ? 50 : 0
         });
     } catch (error) {
         console.error("Review tree registration error:", error);

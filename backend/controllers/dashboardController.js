@@ -29,7 +29,7 @@ const getDashboardSummary = async (req, res) => {
 
         const user = users[0];
 
-        // Overall statistics
+        // Overall statistics including Carbon Currency
         const [summary] = await pool.query(
             `SELECT
                 COUNT(*) AS total_activities,
@@ -47,6 +47,14 @@ const getDashboardSummary = async (req, res) => {
         const totalCO2 = Number(Number(data.total_co2_saved || 0).toFixed(2));
         const totalPoints = Number(data.total_points || 0);
         const totalActivities = Number(data.total_activities || 0);
+
+        // Calculate verified vs pending Carbon Currency
+        const verifiedCBC = Number(Number(data.verified_cbc !== undefined ? data.verified_cbc : totalCO2).toFixed(4));
+        const pendingCBC = Number(Number(data.pending_cbc || 0).toFixed(4));
+        const totalCBC = Number((verifiedCBC + pendingCBC).toFixed(4));
+
+        const marketUSD = Number((verifiedCBC * 0.030).toFixed(2));
+        const marketINR = Number((verifiedCBC * 2.50).toFixed(2));
 
         // GreenProof tree statistics for dashboard integration
         const [trees] = await pool.query(
@@ -103,7 +111,15 @@ const getDashboardSummary = async (req, res) => {
                 total_points: totalPoints,
                 overall_impact: overallImpact,
                 total_trees: Number(treeData.total_trees || 0),
-                surviving_trees: Number(treeData.surviving_trees || 0)
+                surviving_trees: Number(treeData.surviving_trees || 0),
+                carbon_currency: {
+                    verified_cbc: verifiedCBC,
+                    pending_cbc: pendingCBC,
+                    total_cbc: totalCBC,
+                    usd_valuation: marketUSD,
+                    inr_valuation: marketINR,
+                    rate_label: "₹2.50 INR / CBC"
+                }
             },
             impact_breakdown: {
                 low: Number(data.low_impact || 0),
@@ -117,6 +133,8 @@ const getDashboardSummary = async (req, res) => {
                 quantity: Number(activity.quantity),
                 frequency: Number(activity.frequency),
                 co2_saved: Number(Number(activity.co2_saved).toFixed(2)),
+                carbon_currency: Number(activity.carbon_currency !== undefined ? activity.carbon_currency : activity.co2_saved),
+                verification_status: activity.verification_status || "Pending",
                 points: Number(activity.points),
                 impact: activity.impact,
                 ml_prediction: activity.ml_prediction || null,

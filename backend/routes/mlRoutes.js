@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const authMiddleware = require("../middleware/authMiddleware");
+const { calculateCO2AndCurrency } = require("../services/universalCarbonCalculator");
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ function calculateHeuristicImpact(activityType, quantity, frequency) {
     return "Low";
 }
 
+// 1. Classic Random Forest Prediction
 router.post("/predict", authMiddleware, async (req, res) => {
     try {
         const { activity_type, quantity, frequency } = req.body;
@@ -57,7 +59,7 @@ router.post("/predict", authMiddleware, async (req, res) => {
                     frequency: numFreq
                 },
                 {
-                    timeout: 5000,
+                    timeout: 4000,
                     headers: { "Content-Type": "application/json" }
                 }
             );
@@ -68,10 +70,6 @@ router.post("/predict", authMiddleware, async (req, res) => {
                 prediction: mlResponse.data
             });
         } catch (mlErr) {
-            console.warn(
-                `[mlRoutes] ML microservice unreachable at ${ML_SERVICE_URL} (${mlErr.message}). Using transparent fallback model.`
-            );
-
             // Graceful degradation when Python service is offline
             const fallbackImpact = calculateHeuristicImpact(activity_type, numQty, numFreq);
 
@@ -93,6 +91,43 @@ router.post("/predict", authMiddleware, async (req, res) => {
         res.status(500).json({
             message: "Failed to process impact classification."
         });
+    }
+});
+
+// 2. Universal Dynamic Activity Carbon Calculator API
+router.post("/universal-calculate", authMiddleware, async (req, res) => {
+    try {
+        const payload = req.body || {};
+
+        try {
+            // Try Python universal calculator first if active
+            const mlResponse = await axios.post(
+                `${ML_SERVICE_URL}/universal-calculate`,
+                payload,
+                {
+                    timeout: 3000,
+                    headers: { "Content-Type": "application/json" }
+                }
+            );
+
+            return res.json({
+                message: "Universal Carbon Calculation complete",
+                source: "python_microservice",
+                calculation: mlResponse.data.calculation
+            });
+        } catch (err) {
+            // High-speed native JS Universal Engine fallback
+            const calculation = calculateCO2AndCurrency(payload);
+
+            return res.json({
+                message: "Universal Carbon Calculation complete",
+                source: "native_engine",
+                calculation
+            });
+        }
+    } catch (error) {
+        console.error("Universal calculate error:", error.message);
+        res.status(500).json({ message: "Universal carbon calculation failed." });
     }
 });
 

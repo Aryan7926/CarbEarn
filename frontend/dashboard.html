@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — CarbEarn</title>
+    <title>Dashboard & Carbon Wallet — CarbEarn</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="dashboard-page">
@@ -27,38 +27,82 @@
         <div class="container">
             <!-- Welcome Header -->
             <section class="welcome-header">
-                <span class="badge badge-primary mb-xs">Sustainability Dashboard</span>
+                <span class="badge badge-primary mb-xs">Sustainability Dashboard & Wallet</span>
                 <h1>Welcome, <span id="userName" class="text-primary-deep">Learner</span></h1>
-                <p class="text-medium">Monitor your carbon mitigation, track verified activities, and nurture your GreenProof trees.</p>
+                <p class="text-medium">Monitor your avoided carbon emissions, track verified activities, and manage your authorized Carbon Currency (CBC) tokens.</p>
+            </section>
+
+            <!-- CARBON CURRENCY TREASURY WIDGET -->
+            <section class="currency-treasury-card mb-xl">
+                <div class="currency-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="currency-badge">💰 Carbon Currency Treasury</span>
+                        <span class="status-badge badge-verified" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border-color: rgba(52, 211, 153, 0.3);">
+                            Verified on VCM Standard
+                        </span>
+                    </div>
+                    <button type="button" id="btnOpenCertModal" class="btn btn-outline btn-sm" style="color: #a7f3d0; border-color: rgba(52, 211, 153, 0.4); background: rgba(255, 255, 255, 0.05);">
+                        📜 Official Carbon Certificate
+                    </button>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1.5rem;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">
+                            Authorized Carbon Currency Balance
+                        </div>
+                        <div class="currency-main-value">
+                            <span id="treasuryVerifiedCBC" class="currency-amount">0.000</span>
+                            <span class="currency-symbol-tag">CBC</span>
+                        </div>
+                        <div class="text-xs" style="color: rgba(255, 255, 255, 0.65);">
+                            1.00 CBC = 1 kg verified CO₂ mitigated • Spot rate: ₹2.50 INR / CBC
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1.25rem;">
+                        <div class="currency-sub-box" style="min-width: 140px;">
+                            <div class="currency-sub-label">Pending In Audit</div>
+                            <div class="currency-sub-num" id="treasuryPendingCBC" style="color: #fde68a;">0.000 <small style="font-size: 0.75rem;">CBC</small></div>
+                            <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.5);">Awaiting Admin Sign-off</div>
+                        </div>
+
+                        <div class="currency-sub-box" style="min-width: 140px;">
+                            <div class="currency-sub-label">Real-World Valuation</div>
+                            <div class="currency-sub-num" id="treasuryFiatINR" style="color: #6ee7b7;">₹0.00</div>
+                            <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.6);">@ ₹2.50 / CBC</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- 4 Key Stat Cards -->
             <section class="stats-grid mb-2xl">
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <p class="stat-label">Total Activities</p>
                     <h2 id="totalActivities" class="stat-value">0</h2>
-                    <span class="stat-meta">Verified contributions</span>
+                    <span class="stat-meta">Lifetime contributions</span>
                 </div>
 
-                <div class="stat-card">
-                    <p class="stat-label">CO₂ Mitigated</p>
+                <div class="stat-card card-animated">
+                    <p class="stat-label">Total Avoided CO₂</p>
                     <h2 class="stat-value">
                         <span id="totalCO2">0.00</span>
                         <small>kg</small>
                     </h2>
-                    <span class="stat-meta">Avoided carbon emissions</span>
+                    <span class="stat-meta">Verified greenhouse mitigation</span>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <p class="stat-label">Carbon Points</p>
                     <h2 id="totalPoints" class="stat-value text-primary">0</h2>
-                    <span class="stat-meta">Points earned to date</span>
+                    <span class="stat-meta">Campus honor points</span>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <p class="stat-label">Overall Impact Level</p>
                     <h2 id="overallImpact" class="stat-value text-accent">Low</h2>
-                    <span class="stat-meta">Based on weekly intensity</span>
+                    <span class="stat-meta">Weekly intensity rating</span>
                 </div>
             </section>
 
@@ -67,7 +111,7 @@
                 <!-- Left Main Column -->
                 <div class="dashboard-main">
                     <!-- Impact Breakdown -->
-                    <div class="card">
+                    <div class="card card-animated">
                         <div class="card-header">
                             <div>
                                 <span class="badge badge-accent mb-xs">Analytics</span>
@@ -107,11 +151,11 @@
                     </div>
 
                     <!-- Recent Activities List -->
-                    <div class="card">
+                    <div class="card card-animated">
                         <div class="card-header">
                             <div>
-                                <span class="badge badge-primary mb-xs">Timeline</span>
-                                <h3>Recent Green Activities</h3>
+                                <span class="badge badge-primary mb-xs">Audit Ledger</span>
+                                <h3>Recent Activity Log & Verification Status</h3>
                             </div>
                             <a href="history.html" class="btn btn-outline btn-sm">View Full History</a>
                         </div>
@@ -125,13 +169,13 @@
                 <!-- Right Sidebar Column -->
                 <div class="dashboard-sidebar">
                     <!-- Quick Actions -->
-                    <div class="card">
+                    <div class="card card-animated">
                         <div class="card-header">
                             <h3>Quick Actions</h3>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <a href="activities.html" class="btn btn-primary btn-block">
-                                + Log Green Activity
+                            <a href="activities.html" class="btn btn-primary btn-block" style="box-shadow: var(--shadow-glow);">
+                                + Log Green Activity (Universal Engine)
                             </a>
                             <a href="greenproof.html" class="btn btn-secondary btn-block">
                                 🌳 GreenProof Trees
@@ -142,21 +186,8 @@
                         </div>
                     </div>
 
-                    <!-- Personalized Smart Suggestion -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <span class="badge badge-accent mb-xs">Personalized Insight</span>
-                                <h3>Smart Recommendation</h3>
-                            </div>
-                        </div>
-                        <div id="recommendationContent">
-                            <p class="loading-state">Analyzing activity patterns...</p>
-                        </div>
-                    </div>
-
                     <!-- Monthly Carbon Savings Goal -->
-                    <div class="card">
+                    <div class="card card-animated">
                         <div class="card-header">
                             <h3>Monthly Milestone</h3>
                         </div>
@@ -173,7 +204,7 @@
                     </div>
 
                     <!-- User Account Summary -->
-                    <div class="card">
+                    <div class="card card-animated">
                         <div class="card-header">
                             <h3>Account Profile</h3>
                         </div>
@@ -196,6 +227,51 @@
             </div>
         </div>
     </main>
+
+    <!-- CARBON OFFSET CERTIFICATE MODAL -->
+    <div id="certificateModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 620px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                <div>
+                    <span class="badge badge-primary mb-xs">Verifiable Ecological Credential</span>
+                    <h2 style="margin: 0; color: var(--emerald-900);">Carbon Mitigation Certificate</h2>
+                </div>
+                <button type="button" id="btnCloseCertModal" class="btn btn-secondary btn-sm" style="padding: 4px 10px;">✕</button>
+            </div>
+
+            <div class="cert-preview-box">
+                <div class="cert-stamp">
+                    <span>ISO</span>
+                    <span>14064-2</span>
+                    <span>VERIFIED</span>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--slate-600); margin-bottom: 1rem;">
+                    This certificate certifies that <strong id="certContributorName">Learner</strong> has officially mitigated verified greenhouse gas emissions audited under the CarbEarn Platform Governance standard.
+                </p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; padding: 1rem 0; border-top: 1px solid var(--slate-200); border-bottom: 1px solid var(--slate-200);">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 700;">Certified Avoided CO₂</div>
+                        <div id="certCO2Value" style="font-size: 1.5rem; font-weight: 800; color: var(--emerald-700);">0.00 kg</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase; font-weight: 700;">Minted Carbon Currency</div>
+                        <div id="certCBCValue" style="font-size: 1.5rem; font-weight: 800; color: var(--emerald-600);">0.000 CBC</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 6px;">
+                    Cryptographic Ledger Hash (SHA-256 Derived):
+                </div>
+                <div class="hash-pill" id="certLedgerHash">0x7B3A9F1C84D02E...</div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <button type="button" id="btnPrintCert" class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Print Certificate</button>
+                <button type="button" id="btnDismissCertModal" class="btn btn-primary btn-sm">Done</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="footer-logo">🌱 CarbEarn</div>

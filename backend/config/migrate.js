@@ -92,8 +92,14 @@ async function runMigration() {
                     quantity DECIMAL(10,2) NOT NULL,
                     frequency INT NOT NULL DEFAULT 1,
                     co2_saved DECIMAL(10,4) NOT NULL DEFAULT 0,
+                    carbon_currency DECIMAL(10,4) NOT NULL DEFAULT 0,
                     points INT NOT NULL DEFAULT 0,
                     impact VARCHAR(50) DEFAULT 'Low',
+                    verification_status VARCHAR(50) DEFAULT 'Pending',
+                    reviewer_id INT REFERENCES users(id) ON DELETE SET NULL,
+                    review_notes TEXT,
+                    reviewed_at TIMESTAMP,
+                    certificate_hash VARCHAR(255),
                     ml_prediction VARCHAR(255),
                     activity_date DATE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -108,16 +114,24 @@ async function runMigration() {
                     quantity DECIMAL(10,2) NOT NULL,
                     frequency INT NOT NULL DEFAULT 1,
                     co2_saved DECIMAL(10,4) NOT NULL DEFAULT 0,
+                    carbon_currency DECIMAL(10,4) NOT NULL DEFAULT 0,
                     points INT NOT NULL DEFAULT 0,
                     impact VARCHAR(50) DEFAULT 'Low',
+                    verification_status VARCHAR(50) DEFAULT 'Pending',
+                    reviewer_id INT,
+                    review_notes TEXT,
+                    reviewed_at TIMESTAMP NULL,
+                    certificate_hash VARCHAR(255),
                     ml_prediction VARCHAR(255),
                     activity_date DATE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                     FOREIGN KEY (activity_id) REFERENCES activities(id) ON DELETE CASCADE,
+                    FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE SET NULL,
                     INDEX idx_ua_user (user_id),
                     INDEX idx_ua_activity (activity_id),
-                    INDEX idx_ua_date (activity_date)
+                    INDEX idx_ua_date (activity_date),
+                    INDEX idx_ua_verification (verification_status)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             `);
         }

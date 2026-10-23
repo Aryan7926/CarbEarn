@@ -30,6 +30,8 @@ router.get("/stats", getGreenProofStats);
 // Coordinator/Admin verification endpoints
 router.get("/admin/pending", adminMiddleware, getPendingReviews);
 router.put("/admin/care/:logId/review", adminMiddleware, reviewCareLog);
+router.put("/admin/logs/:logId/review", adminMiddleware, reviewCareLog);
+router.put("/admin/care-logs/:logId/review", adminMiddleware, reviewCareLog);
 router.get("/admin/pending-trees", adminMiddleware, getPendingTrees);
 router.put("/admin/trees/:treeId/review", adminMiddleware, reviewTreeRegistration);
 

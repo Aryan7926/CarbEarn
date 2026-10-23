@@ -264,13 +264,15 @@ if (clientType === "postgres") {
                     const match = store.activities.filter(a => a.id === id);
                     return [match, []];
                 }
-                if (lower.includes("where name = 'tree planting'")) {
-                    const match = store.activities.filter(a => a.name.toLowerCase() === "tree planting");
-                    return [match, []];
-                }
-                if (lower.includes("where name =")) {
-                    const name = params.length > 0 ? String(params[0]) : "Tree Planting";
-                    const match = store.activities.filter(a => a.name.toLowerCase() === name.toLowerCase());
+                if (lower.includes("where name =") || lower.includes("name like") || lower.includes("tree")) {
+                    const name = params.length > 0 ? String(params[0]) : "Tree Care & Maintenance";
+                    let match = store.activities.filter(a => a.name.toLowerCase() === name.toLowerCase());
+                    if (match.length === 0) {
+                        match = store.activities.filter(a => a.name.toLowerCase().includes("tree"));
+                    }
+                    if (match.length === 0 && store.activities.length > 0) {
+                        match = [store.activities[0]];
+                    }
                     return [match, []];
                 }
                 return [store.activities, []];
@@ -287,8 +289,23 @@ if (clientType === "postgres") {
 
             // 4. USER_ACTIVITIES Queries
             if (lower.startsWith("insert into user_activities")) {
-                const [user_id, activity_id, quantity, frequency, co2_saved, points, impact, ml_prediction, activity_date] = params;
+                const [
+                    user_id,
+                    activity_id,
+                    quantity,
+                    frequency,
+                    co2_saved,
+                    points,
+                    impact,
+                    ml_prediction,
+                    activity_date,
+                    carbon_currency,
+                    verification_status,
+                    certificate_hash,
+                    notes
+                ] = params;
                 const newId = store.user_activities.length > 0 ? Math.max(...store.user_activities.map(a => a.id)) + 1 : 1;
+                const calculatedCBC = carbon_currency !== undefined ? Number(carbon_currency) : Number(co2_saved);
                 const newAct = {
                     id: newId,
                     user_id: Number(user_id),
@@ -296,15 +313,50 @@ if (clientType === "postgres") {
                     quantity: Number(quantity),
                     frequency: Number(frequency),
                     co2_saved: Number(co2_saved),
+                    carbon_currency: calculatedCBC,
                     points: Number(points),
                     impact: impact || "Low",
                     ml_prediction: ml_prediction || null,
+                    verification_status: verification_status || "Pending",
+                    reviewer_id: null,
+                    review_notes: notes || null,
+                    reviewed_at: null,
+                    certificate_hash: certificate_hash || null,
                     activity_date: activity_date || new Date().toISOString().split("T")[0],
                     created_at: new Date().toISOString()
                 };
                 store.user_activities.push(newAct);
                 writeStore(store);
-                return [{ insertId: newId }, []];
+                return [{ insertId: newId, rows: [newAct] }, []];
+            }
+
+            if (lower.startsWith("update user_activities set")) {
+                if (lower.includes("verification_status = 'verified'") && !lower.includes("where id =")) {
+                    const reviewerId = params[0] || null;
+                    let count = 0;
+                    store.user_activities.forEach(act => {
+                        if (act.verification_status === "Pending" || !act.verification_status) {
+                            act.verification_status = "Verified";
+                            act.reviewer_id = reviewerId;
+                            act.reviewed_at = new Date().toISOString();
+                            count++;
+                        }
+                    });
+                    writeStore(store);
+                    return [{ affectedRows: count }, []];
+                }
+
+                const actId = Number(params[params.length - 1]);
+                const act = store.user_activities.find(a => a.id === actId);
+                if (act) {
+                    act.verification_status = params[0];
+                    act.reviewer_id = params[1] || null;
+                    act.review_notes = params[2] || null;
+                    act.reviewed_at = new Date().toISOString();
+                    writeStore(store);
+                    return [{ affectedRows: 1 }, []];
+                }
+                return [{ affectedRows: 0 }, []];
             }
 
             // Summary metrics for user activities
@@ -317,6 +369,11 @@ if (clientType === "postgres") {
 
                 const totalCO2 = acts.reduce((acc, a) => acc + Number(a.co2_saved || 0), 0);
                 const totalPoints = acts.reduce((acc, a) => acc + Number(a.points || 0), 0);
+                const totalCBC = acts.reduce((acc, a) => acc + Number(a.carbon_currency !== undefined ? a.carbon_currency : a.co2_saved || 0), 0);
+                const verifiedActs = acts.filter(a => a.verification_status === "Verified");
+                const pendingActs = acts.filter(a => a.verification_status === "Pending" || !a.verification_status);
+                const verifiedCBC = verifiedActs.reduce((acc, a) => acc + Number(a.carbon_currency !== undefined ? a.carbon_currency : a.co2_saved || 0), 0);
+                const pendingCBC = pendingActs.reduce((acc, a) => acc + Number(a.carbon_currency !== undefined ? a.carbon_currency : a.co2_saved || 0), 0);
                 const low = acts.filter(a => a.impact === "Low").length;
                 const med = acts.filter(a => a.impact === "Medium").length;
                 const high = acts.filter(a => a.impact === "High").length;
@@ -328,6 +385,12 @@ if (clientType === "postgres") {
                     total_co2_saved: totalCO2,
                     totalCO2Saved: totalCO2,
                     total_points: totalPoints,
+                    total_cbc: totalCBC,
+                    totalCBC: totalCBC,
+                    verified_cbc: verifiedCBC,
+                    verifiedCBC: verifiedCBC,
+                    pending_cbc: pendingCBC,
+                    pendingCBC: pendingCBC,
                     low_impact: low,
                     medium_impact: med,
                     high_impact: high,
@@ -335,35 +398,61 @@ if (clientType === "postgres") {
                 }], []];
             }
 
-            // User activity history list
-            if (lower.includes("from user_activities ua") && lower.includes("join activities a")) {
+            // User activity history list & pending authorizations
+            if (lower.includes("from user_activities ua") || lower.includes("from user_activities")) {
+                if (lower.startsWith("select count(*)") && (lower.includes("verification_status = 'pending'") || lower.includes("ua.verification_status = 'pending'"))) {
+                    const count = store.user_activities.filter(a => a.verification_status === "Pending" || !a.verification_status).length;
+                    return [[{ pendingActivities: count }], []];
+                }
+
                 let list = store.user_activities.map(ua => {
                     const cat = store.activities.find(a => a.id === ua.activity_id) || {};
                     const u = store.users.find(usr => usr.id === ua.user_id) || {};
+                    const rev = store.users.find(usr => usr.id === ua.reviewer_id);
                     return {
                         id: ua.id,
                         user_id: ua.user_id,
-                        user_name: u.name || "User",
+                        user_name: u.name || "Student Contributor",
+                        user_email: u.email || "",
+                        user_college: u.college || "",
+                        student_name: u.name || "Student Contributor",
+                        student_email: u.email || "",
                         activity_id: ua.activity_id,
                         activity_name: cat.name || "Activity",
                         unit: cat.unit || "unit",
                         quantity: ua.quantity,
                         frequency: ua.frequency,
                         co2_saved: ua.co2_saved,
+                        carbon_currency: ua.carbon_currency !== undefined ? ua.carbon_currency : ua.co2_saved,
                         points: ua.points,
                         impact: ua.impact,
                         ml_prediction: ua.ml_prediction,
+                        verification_status: ua.verification_status || "Pending",
+                        reviewer_id: ua.reviewer_id || null,
+                        reviewer_name: rev ? rev.name : null,
+                        review_notes: ua.review_notes || null,
+                        reviewed_at: ua.reviewed_at || null,
+                        certificate_hash: ua.certificate_hash || null,
                         activity_date: ua.activity_date,
                         created_at: ua.created_at
                     };
                 });
 
-                if (lower.includes("where ua.user_id =")) {
+                if (lower.includes("where ua.user_id =") || lower.includes("where user_id =")) {
                     const uid = Number(params[0]);
                     list = list.filter(a => a.user_id === uid);
                 }
 
-                list.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+                if (lower.includes("where ua.verification_status = 'pending'") || lower.includes("where verification_status = 'pending'")) {
+                    list = list.filter(a => a.verification_status === "Pending");
+                }
+
+                if (lower.includes("where ua.id =") || lower.includes("where id =")) {
+                    const targetId = Number(params[0]);
+                    list = list.filter(a => a.id === targetId);
+                }
+
+                list.sort((a, b) => new Date(b.activity_date || b.created_at) - new Date(a.activity_date || a.created_at));
 
                 if (lower.includes("limit 5")) {
                     list = list.slice(0, 5);
@@ -425,8 +514,10 @@ if (clientType === "postgres") {
                         tree.status = params[1] || params[0];
                         tree.admin_notes = params[2] || null;
                         tree.verified_at = new Date().toISOString();
+                    } else if (lower.includes("status = 'surviving'")) {
+                        tree.status = "Surviving";
                     } else if (lower.includes("status =")) {
-                        tree.status = params[0];
+                        tree.status = String(params[0]);
                     }
                     writeStore(store);
                 }

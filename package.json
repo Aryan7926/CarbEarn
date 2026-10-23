@@ -1,0 +1,32 @@
+{
+  "name": "carbearn",
+  "version": "1.0.0",
+  "description": "CarbEarn - Sustainability & Carbon Accounting Platform",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "npm install --prefix backend",
+    "test": "npm test --prefix backend",
+    "migrate": "node backend/config/migrate.js"
+  },
+  "keywords": [
+    "sustainability",
+    "carbon-accounting",
+    "greenproof",
+    "carbearn"
+  ],
+  "author": "CarbEarn Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.12.0",
+    "pg": "^8.13.1"
+  }
+}

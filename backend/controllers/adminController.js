@@ -18,8 +18,13 @@ const getAdminOverview = async (req, res) => {
         const [carbonStats] = await pool.query(
             `SELECT
                 COALESCE(SUM(co2_saved), 0) AS totalCO2Saved,
+                COALESCE(SUM(carbon_currency), 0) AS totalCBC,
                 COUNT(DISTINCT user_id) AS activeUsers
              FROM user_activities`
+        );
+
+        const [pendingActivityCount] = await pool.query(
+            "SELECT COUNT(*) AS pendingActivities FROM user_activities WHERE verification_status = 'Pending'"
         );
 
         // GreenProof tree analytics
@@ -44,16 +49,28 @@ const getAdminOverview = async (req, res) => {
         const tStats = treeStats[0] || {};
         const pChecks = pendingChecks[0] || {};
         const pTrees = pendingTrees[0] || {};
+        const pActs = pendingActivityCount[0] || {};
+
+        const totalCO2 = Number(Number(cStats.totalCO2Saved || 0).toFixed(2));
+        const totalMintedCBC = Number(Number(cStats.verified_cbc !== undefined ? cStats.verified_cbc : totalCO2).toFixed(4));
+        const pendingCBC = Number(Number(cStats.pending_cbc || 0).toFixed(4));
 
         res.json({
             totalUsers: Number(uCount.totalUsers || 0),
             totalActivities: Number(aCount.totalActivities || 0),
-            totalCO2Saved: Number(Number(cStats.totalCO2Saved || 0).toFixed(2)),
+            totalCO2Saved: totalCO2,
             activeUsers: Number(cStats.activeUsers || 0),
             totalTrees: Number(tStats.totalTrees || 0),
             survivingTrees: Number(tStats.survivingTrees || 0),
             pendingReviews: Number(pChecks.pendingReviews || 0),
-            pendingTrees: Number(pTrees.pendingTrees || 0)
+            pendingTrees: Number(pTrees.pendingTrees || 0),
+            pendingActivities: Number(pActs.pendingActivities || 0),
+            carbon_currency: {
+                total_minted_cbc: totalMintedCBC,
+                pending_cbc: pendingCBC,
+                fiat_usd: Number((totalMintedCBC * 0.030).toFixed(2)),
+                fiat_inr: Number((totalMintedCBC * 2.50).toFixed(2))
+            }
         });
     } catch (error) {
         console.error("Admin overview error:", error.message);
@@ -98,7 +115,8 @@ const getAdminUsers = async (req, res) => {
             created_at: u.created_at,
             activity_count: Number(u.activity_count || 0),
             total_co2: Number(Number(u.total_co2 || 0).toFixed(2)),
-            total_points: Number(u.total_points || 0)
+            total_points: Number(u.total_points || 0),
+            carbon_currency: Number(Number(u.total_co2 || 0).toFixed(4))
         })));
     } catch (error) {
         console.error("Admin users error:", error.message);
@@ -115,32 +133,38 @@ const getRecentAdminActivities = async (req, res) => {
             `SELECT
                 ua.id,
                 u.name AS user_name,
+                u.email AS user_email,
                 a.name AS activity_name,
                 ua.quantity,
                 a.unit,
                 ua.frequency,
                 ua.co2_saved,
+                ua.carbon_currency,
                 ua.points,
                 ua.impact,
+                ua.verification_status,
                 ua.activity_date,
                 ua.created_at
              FROM user_activities ua
              JOIN users u ON ua.user_id = u.id
              JOIN activities a ON ua.activity_id = a.id
              ORDER BY ua.created_at DESC
-             LIMIT 15`
+             LIMIT 25`
         );
 
         res.json(activities.map(act => ({
             id: act.id,
             user_name: act.user_name,
+            user_email: act.user_email,
             activity_name: act.activity_name,
             quantity: Number(act.quantity),
             unit: act.unit,
             frequency: Number(act.frequency),
             co2_saved: Number(Number(act.co2_saved).toFixed(2)),
+            carbon_currency: Number(act.carbon_currency !== undefined ? act.carbon_currency : act.co2_saved),
             points: Number(act.points),
             impact: act.impact,
+            verification_status: act.verification_status || "Pending",
             activity_date: act.activity_date,
             created_at: act.created_at
         })));
@@ -151,7 +175,158 @@ const getRecentAdminActivities = async (req, res) => {
 };
 
 // ---------------------------------------------------------------------------
-// 4. List System Administrators
+// 4. Pending Activities Verification Queue
+// ---------------------------------------------------------------------------
+const getPendingActivities = async (req, res) => {
+    try {
+        const [pending] = await pool.query(
+            `SELECT
+                ua.id,
+                ua.user_id,
+                u.name AS student_name,
+                u.email AS student_email,
+                u.college AS student_college,
+                a.name AS activity_name,
+                a.unit,
+                ua.quantity,
+                ua.frequency,
+                ua.co2_saved,
+                ua.carbon_currency,
+                ua.points,
+                ua.impact,
+                ua.verification_status,
+                ua.ml_prediction,
+                ua.activity_date,
+                ua.certificate_hash,
+                ua.created_at
+             FROM user_activities ua
+             JOIN users u ON ua.user_id = u.id
+             JOIN activities a ON ua.activity_id = a.id
+             WHERE ua.verification_status = 'Pending'
+             ORDER BY ua.created_at DESC`
+        );
+
+        res.json({
+            total_pending: pending.length,
+            activities: pending.map(act => {
+                const co2 = Number(act.co2_saved || 0);
+                const cbc = Number(act.carbon_currency !== undefined ? act.carbon_currency : co2);
+                return {
+                    id: act.id,
+                    user_id: act.user_id,
+                    student_name: act.student_name,
+                    student_email: act.student_email,
+                    student_college: act.student_college,
+                    activity_name: act.activity_name,
+                    unit: act.unit,
+                    quantity: Number(act.quantity),
+                    frequency: Number(act.frequency),
+                    co2_saved: Number(co2.toFixed(2)),
+                    carbon_currency: Number(cbc.toFixed(4)),
+                    milli_cbc: Math.round(cbc * 1000),
+                    points: Number(act.points),
+                    impact: act.impact,
+                    verification_status: act.verification_status || "Pending",
+                    ml_prediction: act.ml_prediction,
+                    activity_date: act.activity_date,
+                    certificate_hash: act.certificate_hash,
+                    created_at: act.created_at
+                };
+            })
+        });
+    } catch (error) {
+        console.error("Pending activities error:", error.message);
+        res.status(500).json({ message: "Failed to load pending activities." });
+    }
+};
+
+// ---------------------------------------------------------------------------
+// 5. Authorize / Verify or Reject a User Activity (Mint Carbon Currency)
+// ---------------------------------------------------------------------------
+const verifyActivity = async (req, res) => {
+    try {
+        const activityId = Number(req.params.id);
+        const { status, review_notes } = req.body;
+        const reviewerId = req.user.id;
+
+        if (!activityId || isNaN(activityId)) {
+            return res.status(400).json({ message: "Valid activity ID is required." });
+        }
+
+        const validStatuses = ["Verified", "Rejected"];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({
+                message: `Status must be either 'Verified' or 'Rejected'. Received: ${status}`
+            });
+        }
+
+        // Fetch activity
+        const [records] = await pool.query(
+            "SELECT * FROM user_activities WHERE id = ?",
+            [activityId]
+        );
+
+        if (!records || records.length === 0) {
+            return res.status(404).json({ message: "Activity record not found." });
+        }
+
+        const act = records[0];
+
+        await pool.query(
+            `UPDATE user_activities
+             SET verification_status = ?, reviewer_id = ?, review_notes = ?, reviewed_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [
+                status,
+                reviewerId,
+                review_notes ? String(review_notes).trim() : null,
+                activityId
+            ]
+        );
+
+        const mintedCBC = Number(act.carbon_currency !== undefined ? act.carbon_currency : act.co2_saved);
+
+        res.json({
+            message: status === "Verified"
+                ? `Activity verified! ${mintedCBC.toFixed(2)} Carbon Currency (CBC) authorized and minted.`
+                : "Activity rejected with reviewer notes.",
+            activity_id: activityId,
+            verification_status: status,
+            carbon_currency: mintedCBC,
+            review_notes: review_notes || null
+        });
+    } catch (error) {
+        console.error("Verify activity error:", error.message);
+        res.status(500).json({ message: "Failed to update activity verification status." });
+    }
+};
+
+// ---------------------------------------------------------------------------
+// 6. Bulk Authorize All Pending Activities
+// ---------------------------------------------------------------------------
+const batchVerifyActivities = async (req, res) => {
+    try {
+        const reviewerId = req.user.id;
+
+        const [result] = await pool.query(
+            `UPDATE user_activities
+             SET verification_status = 'Verified', reviewer_id = ?, reviewed_at = CURRENT_TIMESTAMP
+             WHERE verification_status = 'Pending'`,
+            [reviewerId]
+        );
+
+        res.json({
+            message: "Batch activity authorization completed successfully.",
+            authorized_count: result.affectedRows || 0
+        });
+    } catch (error) {
+        console.error("Batch verify error:", error.message);
+        res.status(500).json({ message: "Failed to batch authorize activities." });
+    }
+};
+
+// ---------------------------------------------------------------------------
+// 7. List System Administrators
 // ---------------------------------------------------------------------------
 const getAdminList = async (req, res) => {
     try {
@@ -177,7 +352,7 @@ const getAdminList = async (req, res) => {
 };
 
 // ---------------------------------------------------------------------------
-// 5. Register New Administrator
+// 8. Register New Administrator
 // ---------------------------------------------------------------------------
 const createAdmin = async (req, res) => {
     try {
@@ -226,6 +401,9 @@ module.exports = {
     getAdminOverview,
     getAdminUsers,
     getRecentAdminActivities,
+    getPendingActivities,
+    verifyActivity,
+    batchVerifyActivities,
     getAdminList,
     createAdmin
 };

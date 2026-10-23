@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity History — CarbEarn</title>
+    <title>Activity History & Carbon Ledger — CarbEarn</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="dashboard-page">
@@ -25,47 +25,69 @@
     <main class="dashboard-content">
         <div class="container">
             <section class="welcome-header">
-                <span class="badge badge-primary mb-xs">Historical Ledger</span>
-                <h1>Your Green <span class="text-primary-deep">Activity History</span></h1>
-                <p class="text-medium">Inspect every logged contribution, filter by category or impact level, and audit your total carbon savings.</p>
+                <span class="badge badge-primary mb-xs">Historical Carbon Ledger</span>
+                <h1>Your Green Activity & <span class="text-primary-deep">Carbon Ledger</span></h1>
+                <p class="text-medium">Audit every recorded contribution, monitor administrator authorization statuses, and track minted Carbon Currency (CBC).</p>
             </section>
 
-            <!-- Summary Totals -->
+            <!-- Summary Totals (4 Cards) -->
             <section class="stats-grid mb-2xl">
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <p class="stat-label">Total Recorded</p>
                     <h2 id="totalActivities" class="stat-value">0</h2>
                     <span class="stat-meta">Lifetime entries</span>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <p class="stat-label">Total CO₂ Mitigated</p>
                     <h2 class="stat-value">
                         <span id="totalCO2">0.00</span>
                         <small>kg</small>
                     </h2>
-                    <span class="stat-meta">Verified environmental savings</span>
+                    <span class="stat-meta">Verified greenhouse mitigation</span>
                 </div>
 
-                <div class="stat-card">
-                    <p class="stat-label">Total Carbon Points</p>
-                    <h2 id="totalPoints" class="stat-value text-primary">0</h2>
-                    <span class="stat-meta">Accumulated score</span>
+                <div class="stat-card card-animated" style="border-left: 3px solid var(--emerald-500);">
+                    <p class="stat-label">Authorized Carbon Currency</p>
+                    <h2 class="stat-value text-primary">
+                        <span id="totalVerifiedCBC">0.000</span>
+                        <small style="font-size: 0.9rem;">CBC</small>
+                    </h2>
+                    <span class="stat-meta" id="fiatValuationText">Valued at ~₹0.00 INR</span>
+                </div>
+
+                <div class="stat-card card-animated">
+                    <p class="stat-label">Pending In Escrow</p>
+                    <h2 class="stat-value" style="color: #b45309;">
+                        <span id="totalPendingCBC">0.000</span>
+                        <small style="font-size: 0.9rem;">CBC</small>
+                    </h2>
+                    <span class="stat-meta">Awaiting Admin Authorization</span>
                 </div>
             </section>
 
             <!-- Activity Ledger Card -->
-            <div class="card">
+            <div class="card card-animated">
                 <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <span class="badge badge-accent mb-xs">Filter & Audit</span>
-                        <h2>Recorded Activities</h2>
+                        <h2>Recorded Activities Ledger</h2>
                     </div>
                     <a href="activities.html" class="btn btn-primary btn-sm">+ Log New Activity</a>
                 </div>
 
-                <!-- Filters Toolbar -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; background: var(--color-off-white); padding: 1rem; border-radius: var(--radius-md);">
+                <!-- Filters Toolbar (3-column responsive) -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: var(--color-off-white); padding: 1rem; border-radius: var(--radius-md);">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="verificationFilter" class="text-xs font-semibold text-medium">Filter by Authorization Status</label>
+                        <select id="verificationFilter" class="form-control">
+                            <option value="All">All Verification States</option>
+                            <option value="Verified">Authorized & Minted</option>
+                            <option value="Pending">Pending Administrator Audit</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+
                     <div class="form-group" style="margin-bottom: 0;">
                         <label for="impactFilter" class="text-xs font-semibold text-medium">Filter by Impact Category</label>
                         <select id="impactFilter" class="form-control">

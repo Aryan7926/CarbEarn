@@ -4,6 +4,9 @@ const {
     getAdminOverview,
     getAdminUsers,
     getRecentAdminActivities,
+    getPendingActivities,
+    verifyActivity,
+    batchVerifyActivities,
     getAdminList,
     createAdmin
 } = require("../controllers/adminController");
@@ -25,6 +28,11 @@ router.get("/users", getAdminUsers);
 
 // View recent activities
 router.get("/activities", getRecentAdminActivities);
+
+// Pending activity authorization & carbon currency minting
+router.get("/pending-activities", getPendingActivities);
+router.put("/activities/:id/verify", verifyActivity);
+router.post("/activities/batch-verify", batchVerifyActivities);
 
 // View list of administrators
 router.get("/admins", getAdminList);

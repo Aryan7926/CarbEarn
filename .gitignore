@@ -23,6 +23,8 @@ ml/.env
 
 # Local Development Storage Cache
 backend/data/carbearn.json
+backend/data/*.backup.json
+backend/data/*.backup.*.json
 
 # Operating System & IDE Files
 .DS_Store

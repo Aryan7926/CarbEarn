@@ -9,13 +9,15 @@
 </head>
 <body class="dashboard-page">
 
-    <!-- Top Floating Glass Navbar (Consistent with Website) -->
+    <!-- Top Floating Glass Navbar -->
     <header class="navbar">
         <a href="admin.html" class="logo">
             <span class="logo-mark">🌱</span> CarbEarn <span class="badge badge-accent" style="font-size: 0.65rem; margin-left: 6px;">ADMIN</span>
         </a>
         <nav class="nav-links">
-            <a href="#overview" class="admin-tab-btn active" data-tab="tabOverview">Overview</a>
+            <a href="#activity-queue" class="admin-tab-btn active" data-tab="tabActivityQueue">
+                Activity Authorization <span id="pendingActivitiesBadge" class="badge badge-medium" style="font-size: 0.7rem; padding: 1px 6px; display: none;">0</span>
+            </a>
             <a href="#tree-queue" class="admin-tab-btn" data-tab="tabTreeQueue">
                 Tree Queue <span id="pendingTreesBadge" class="badge badge-medium" style="font-size: 0.7rem; padding: 1px 6px; display: none;">0</span>
             </a>
@@ -38,17 +40,17 @@
     <main class="dashboard-content">
         <div class="container">
 
-            <!-- Welcome Banner (Consistent CleanTech Style) -->
-            <section class="welcome-banner">
+            <!-- Welcome Banner -->
+            <section class="welcome-banner card-animated">
                 <div class="welcome-text">
                     <span class="badge badge-primary mb-xs" style="background: rgba(16, 185, 129, 0.2); color: #ffffff; border-color: rgba(16, 185, 129, 0.4);">
-                        Platform Governance
+                        Platform Governance & Carbon Treasury
                     </span>
                     <h1>Coordinator & Admin Control Center</h1>
-                    <p>Verify newly registered saplings, audit periodic health inspections, and oversee campus sustainability veracity.</p>
+                    <p>Authorize student carbon actions, verify registered GreenProof saplings, audit health inspections, and oversee campus carbon currency minting veracity.</p>
                 </div>
                 <div>
-                    <button type="button" id="refreshAdmin" class="btn btn-primary btn-sm">
+                    <button type="button" id="refreshAdmin" class="btn btn-primary btn-sm" style="box-shadow: var(--shadow-glow);">
                         ↻ Refresh Live Data
                     </button>
                 </div>
@@ -56,45 +58,56 @@
 
             <div id="adminMessage" class="form-message" role="status" aria-live="polite"></div>
 
-            <!-- Metric Cards Grid (6 Live Cards) -->
+            <!-- Metric Cards Grid (7 Live Cards with Animations) -->
             <section class="stats-grid mb-xl" id="overview">
-                <div class="stat-card" style="border-left: 4px solid var(--emerald-500);">
+                <div class="stat-card card-animated" style="border-left: 4px solid var(--emerald-500);">
+                    <div class="stat-header">
+                        <span>Pending Activities</span>
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">⚡</div>
+                    </div>
+                    <div class="stat-value" id="pendingActivitiesCount" style="color: #b45309;">0</div>
+                    <div class="stat-subtext">Awaiting Authorization</div>
+                </div>
+
+                <div class="stat-card card-animated" style="border-left: 4px solid var(--emerald-500);">
                     <div class="stat-header">
                         <span>Pending Trees</span>
                         <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">🌲</div>
                     </div>
                     <div class="stat-value" id="pendingTreesCount">0</div>
-                    <div class="stat-subtext">Awaiting verification</div>
+                    <div class="stat-subtext">Awaiting sapling audit</div>
                 </div>
 
-                <div class="stat-card" style="border-left: 4px solid var(--emerald-500);">
+                <div class="stat-card card-animated" style="border-left: 4px solid var(--emerald-500);">
                     <div class="stat-header">
                         <span>Pending Care Checks</span>
                         <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">🔍</div>
                     </div>
                     <div class="stat-value" id="pendingReviewsCount">0</div>
-                    <div class="stat-subtext">Health logs to audit</div>
+                    <div class="stat-subtext">Health logs to review</div>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <div class="stat-header">
-                        <span>Verified Trees</span>
-                        <div class="stat-icon">🌳</div>
+                        <span>Minted Carbon Currency</span>
+                        <div class="stat-icon">💰</div>
                     </div>
-                    <div class="stat-value" id="totalTrees">0</div>
-                    <div class="stat-subtext">Living registered saplings</div>
+                    <div class="stat-value">
+                        <span id="totalMintedCBC">0.00</span> <small style="font-size: 0.85rem; color: var(--emerald-600);">CBC</small>
+                    </div>
+                    <div class="stat-subtext" id="totalFiatINR">Valued at ~₹0.00 INR</div>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <div class="stat-header">
                         <span>Active Contributors</span>
                         <div class="stat-icon">👥</div>
                     </div>
                     <div class="stat-value" id="totalUsers">0</div>
-                    <div class="stat-subtext">Registered members</div>
+                    <div class="stat-subtext">Registered campus members</div>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <div class="stat-header">
                         <span>Avoided Emissions</span>
                         <div class="stat-icon">⚡</div>
@@ -102,23 +115,26 @@
                     <div class="stat-value">
                         <span id="totalCO2Saved">0.00</span> <small style="font-size: 1rem; color: var(--slate-500);">kg</small>
                     </div>
-                    <div class="stat-subtext">Verified mitigation</div>
+                    <div class="stat-subtext">Verified greenhouse mitigation</div>
                 </div>
 
-                <div class="stat-card">
+                <div class="stat-card card-animated">
                     <div class="stat-header">
-                        <span>Logged Actions</span>
-                        <div class="stat-icon">✨</div>
+                        <span>Verified Trees</span>
+                        <div class="stat-icon">🌳</div>
                     </div>
-                    <div class="stat-value" id="totalActivities">0</div>
-                    <div class="stat-subtext">Lifetime activity records</div>
+                    <div class="stat-value" id="totalTrees">0</div>
+                    <div class="stat-subtext">Living registered saplings</div>
                 </div>
             </section>
 
             <!-- Navigation Tabs / Section Filter -->
             <div style="display: flex; gap: 0.5rem; background: var(--slate-100); padding: 5px; border-radius: var(--radius-full); margin-bottom: 2rem; width: fit-content; max-width: 100%; overflow-x: auto;">
-                <button type="button" class="btn btn-sm tab-pill active" id="btnTabTreeQueue">
-                    🌲 New Tree Registrations Queue
+                <button type="button" class="btn btn-sm tab-pill active" id="btnTabActivityQueue">
+                    ⚡ Activity Authorization Queue <span id="pendingActivitiesTabBadge" class="badge badge-accent" style="font-size: 0.7rem; padding: 1px 6px; margin-left: 4px; display: none;">0</span>
+                </button>
+                <button type="button" class="btn btn-sm tab-pill" id="btnTabTreeQueue">
+                    🌲 Tree Registrations Queue
                 </button>
                 <button type="button" class="btn btn-sm tab-pill" id="btnTabCareQueue">
                     🔍 Care Inspections Queue
@@ -126,14 +142,39 @@
                 <button type="button" class="btn btn-sm tab-pill" id="btnTabUsers">
                     👥 Contributor Directory
                 </button>
+                <button type="button" class="btn btn-sm tab-pill" id="btnTabAdmins">
+                    🛡️ Admins & Staff
+                </button>
                 <button type="button" class="btn btn-sm tab-pill" id="btnTabActivities">
                     📜 Live Activity Audit Feed
                 </button>
             </div>
 
-            <!-- SECTION 1: New Tree Registration Queue (REQUESTED SIGNATURE FEATURE) -->
-            <section id="sectionTreeQueue" class="admin-section mb-2xl">
-                <div class="card">
+            <!-- SECTION 0: Activity Authorization Queue (CRITICAL USER REQUEST) -->
+            <section id="sectionActivityQueue" class="admin-section mb-2xl">
+                <div class="card card-animated">
+                    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <span class="badge badge-primary mb-xs">Carbon Currency Minting Authorization</span>
+                            <h2>Audit & Authorize Contributor Actions</h2>
+                            <p class="text-sm text-medium">Review submitted green activities, verify ecological calculations, and officially authorize Carbon Currency (CBC) minting into contributor accounts.</p>
+                        </div>
+                        <div>
+                            <button type="button" id="btnBulkAuthorizeActivities" class="btn btn-primary btn-sm" style="box-shadow: var(--shadow-glow);">
+                                ⚡ Bulk Authorize All Pending
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pendingActivitiesContainer" style="margin-top: 1rem;">
+                        <p class="loading-state">Loading pending activities awaiting authorization...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 1: New Tree Registration Queue -->
+            <section id="sectionTreeQueue" class="admin-section mb-2xl" style="display: none;">
+                <div class="card card-animated">
                     <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <span class="badge badge-accent mb-xs">Tree Verification Queue</span>
@@ -150,7 +191,7 @@
 
             <!-- SECTION 2: Care Inspection Queue -->
             <section id="sectionCareQueue" class="admin-section mb-2xl" style="display: none;">
-                <div class="card">
+                <div class="card card-animated">
                     <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <span class="badge badge-accent mb-xs">Inspection Queue</span>
@@ -167,7 +208,7 @@
 
             <!-- SECTION 3: Contributor Directory -->
             <section id="sectionUsers" class="admin-section mb-2xl" style="display: none;">
-                <div class="card">
+                <div class="card card-animated">
                     <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <span class="badge badge-accent mb-xs">Community Directory</span>
@@ -179,88 +220,45 @@
                         </div>
                     </div>
 
-                    <div class="table-container" style="margin-top: 1rem;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Contributor</th>
-                                    <th>Institution</th>
-                                    <th>Role</th>
-                                    <th>Actions Logged</th>
-                                    <th>CO₂ Saved</th>
-                                    <th>Carbon Points</th>
-                                    <th>Joined</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                                <tr><td colspan="7" class="loading-state">Loading contributors...</td></tr>
-                            </tbody>
-                        </table>
+                    <div id="usersTableContainer" class="table-container" style="overflow-x: auto; margin-top: 1rem;">
+                        <p class="loading-state">Loading campus user directory...</p>
                     </div>
                 </div>
             </section>
 
-            <!-- SECTION 3B: Administrators & Platform Governance -->
+            <!-- SECTION 4: Admins & Staff -->
             <section id="sectionAdmins" class="admin-section mb-2xl" style="display: none;">
-                <div class="card">
+                <div class="card card-animated">
                     <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <span class="badge badge-accent mb-xs">Governance Team</span>
-                            <h2>Platform Administrators</h2>
+                            <span class="badge badge-accent mb-xs">Governance Roster</span>
+                            <h2>Platform Administrators & Staff</h2>
+                            <p class="text-sm text-medium">Administrators hold governance credentials and are strictly separated from contributor leaderboards.</p>
                         </div>
-                        <div>
-                            <button type="button" id="openAddAdminModalBtn" class="btn btn-primary btn-sm">
-                                + Register New Administrator
-                            </button>
-                        </div>
+                        <button type="button" id="btnOpenAddAdminModal" class="btn btn-primary btn-sm">
+                            + Add New Administrator
+                        </button>
                     </div>
 
-                    <div class="table-container" style="margin-top: 1rem;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Administrator</th>
-                                    <th>Email</th>
-                                    <th>Institution / Department</th>
-                                    <th>Role</th>
-                                    <th>Registration Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminsTableBody">
-                                <tr><td colspan="5" class="loading-state">Loading administrators...</td></tr>
-                            </tbody>
-                        </table>
+                    <div id="adminListContainer" class="table-container" style="overflow-x: auto; margin-top: 1rem;">
+                        <p class="loading-state">Loading administrators...</p>
                     </div>
                 </div>
             </section>
 
-            <!-- SECTION 4: Live Activity Audit Feed -->
+            <!-- SECTION 5: Activity Audit Feed -->
             <section id="sectionActivities" class="admin-section mb-2xl" style="display: none;">
-                <div class="card">
+                <div class="card card-animated">
                     <div class="card-header">
                         <div>
-                            <span class="badge badge-accent mb-xs">Live Environmental Ledger</span>
-                            <h2>All Logged Activities</h2>
+                            <span class="badge badge-primary mb-xs">Audit Ledger</span>
+                            <h2>Recent System-wide Green Activities</h2>
+                            <p class="text-sm text-medium">Live timestamped log of all activities across the campus platform.</p>
                         </div>
                     </div>
 
-                    <div class="table-container" style="margin-top: 1rem;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Contributor</th>
-                                    <th>Green Action</th>
-                                    <th>Volume & Frequency</th>
-                                    <th>CO₂ Avoided</th>
-                                    <th>Points</th>
-                                    <th>Impact Tier</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="activitiesTableBody">
-                                <tr><td colspan="7" class="loading-state">Loading activities...</td></tr>
-                            </tbody>
-                        </table>
+                    <div id="adminActivitiesContainer" style="margin-top: 1rem;">
+                        <p class="loading-state">Loading recent activity ledger...</p>
                     </div>
                 </div>
             </section>
@@ -268,74 +266,113 @@
         </div>
     </main>
 
-    <!-- MODAL 1: Tree Verification Modal (Approve Correct / Mark Incorrect) -->
-    <div id="treeReviewModal" class="modal-overlay" style="display: none;">
+    <!-- MODAL 0: Activity Authorization & Verification Decision Modal -->
+    <div id="activityReviewModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.5rem;">
                 <div>
-                    <span class="badge badge-accent mb-xs">Tree Verification</span>
-                    <h2 id="treeModalTitle">Audit Tree Registration</h2>
+                    <span class="badge badge-primary mb-xs">Authorization Decision</span>
+                    <h2 id="actReviewModalTitle">Audit Green Activity</h2>
                 </div>
-                <button type="button" id="closeTreeModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+                <button type="button" id="closeActReviewModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
             </div>
 
-            <div id="treeModalDetails" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+            <div id="actReviewSummary" style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem;">
                 <!-- Populated dynamically -->
             </div>
 
-            <form id="reviewTreeForm">
-                <input type="hidden" id="modalTreeId">
+            <form id="activityReviewForm">
+                <input type="hidden" id="targetActivityId">
 
                 <div class="form-group">
-                    <label for="treeVerificationDecision">Verification Decision</label>
-                    <select id="treeVerificationDecision" class="form-control" required>
-                        <option value="Verified">✓ Correct — Approve Sapling (+50 Carbon Points)</option>
-                        <option value="Rejected">✕ Incorrect — Reject Submission (0 Points)</option>
+                    <label for="actReviewDecision">Coordinator Decision</label>
+                    <select id="actReviewDecision" class="form-control" required>
+                        <option value="Verified">✓ Authorize & Mint Carbon Currency</option>
+                        <option value="Rejected">✕ Reject (Requires revision or proof)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="treeAdminNotes">Coordinator Audit Notes & Feedback</label>
-                    <textarea id="treeAdminNotes" class="form-control" placeholder="Provide feedback to the student (e.g., 'Species & planting location confirmed with ground inspection', or reason for rejection)..." rows="3"></textarea>
+                    <label for="actReviewNotes">Audit Notes / Coordinator Feedback</label>
+                    <textarea id="actReviewNotes" class="form-control" rows="3" placeholder="e.g. Calculation verified against transit ticket / commuter guidelines. Approved." required></textarea>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
-                    <button type="button" id="cancelTreeModalBtn" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" id="submitTreeDecisionBtn" class="btn btn-primary">Confirm Verification</button>
+                    <button type="button" id="cancelActReviewBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitActReviewBtn" class="btn btn-primary">Save Decision & Update Currency</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 2: Care Inspection Review Modal -->
-    <div id="reviewModal" class="modal-overlay" style="display: none;">
+    <!-- MODAL 1: Tree Verification Modal -->
+    <div id="treeVerifyModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.5rem;">
                 <div>
-                    <span class="badge badge-accent mb-xs">Health Audit</span>
-                    <h2>Review Care Inspection</h2>
+                    <span class="badge badge-accent mb-xs">Audit Decision</span>
+                    <h2 id="modalTreeSpecies">Verify Sapling Registration</h2>
                 </div>
-                <button type="button" id="closeReviewModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+                <button type="button" id="closeTreeModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
             </div>
 
-            <div id="modalInspectionDetails" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+            <div id="modalTreeSummary" style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem;">
                 <!-- Populated dynamically -->
             </div>
 
-            <form id="reviewInspectionForm">
-                <input type="hidden" id="modalLogId">
+            <form id="treeAuditForm">
+                <input type="hidden" id="targetTreeId">
 
                 <div class="form-group">
-                    <label for="reviewStatusSelect">Verification Decision</label>
-                    <select id="reviewStatusSelect" class="form-control" required>
-                        <option value="Verified">✓ Verified — Confirm Care (+25 Stewardship Bonus)</option>
-                        <option value="Rejected">✕ Rejected — Insufficient / Invalid Evidence</option>
+                    <label for="auditDecision">Audit Decision</label>
+                    <select id="auditDecision" class="form-control" required>
+                        <option value="Verified">Verify as Correct (+50 Points & GreenProof Verification)</option>
+                        <option value="Rejected">Mark as Incorrect (Reject submission)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="reviewNotesInput">Coordinator Feedback</label>
-                    <textarea id="reviewNotesInput" class="form-control" placeholder="Add constructive notes for the contributor..." rows="3"></textarea>
+                    <label for="auditNotes">Coordinator Feedback / Notes</label>
+                    <textarea id="auditNotes" class="form-control" rows="3" placeholder="e.g. Verified during South Quad inspection. Proper mulching confirmed." required></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" id="cancelTreeAuditBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitTreeDecisionBtn" class="btn btn-primary">Confirm Decision</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Review Care Log Modal -->
+    <div id="reviewLogModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="card-header" style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <span class="badge badge-accent mb-xs">Health Audit</span>
+                    <h2>Review Care Inspection Log</h2>
+                </div>
+                <button type="button" id="closeReviewModal" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+            </div>
+
+            <div id="modalReviewSummary" style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem;">
+                <!-- Populated dynamically -->
+            </div>
+
+            <form id="reviewLogForm">
+                <input type="hidden" id="targetLogId">
+
+                <div class="form-group">
+                    <label for="logVerificationStatus">Verification Status</label>
+                    <select id="logVerificationStatus" class="form-control" required>
+                        <option value="Verified">Verified (+25 Stewardship Points)</option>
+                        <option value="Rejected">Rejected (Inadequate evidence)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="logReviewNotes">Coordinator Feedback</label>
+                    <textarea id="logReviewNotes" class="form-control" rows="3" placeholder="e.g. Photographic evidence confirms healthy leaf shoots." required></textarea>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">

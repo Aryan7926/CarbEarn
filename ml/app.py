@@ -29,6 +29,8 @@ def load_model():
         print("Run 'python train.py' first to train the model.")
 
 
+from universal_calculator import calculate_universal
+
 load_model()
 
 
@@ -40,9 +42,29 @@ def home():
         "model_loaded": model_data is not None,
         "endpoints": {
             "POST /predict": "Predict activity impact",
+            "POST /universal-calculate": "Calculate dynamic CO2 and Carbon Currency for any activity",
             "GET /health": "Health check"
         }
     })
+
+
+@app.route("/universal-calculate", methods=["POST"])
+def universal_calculate_endpoint():
+    try:
+        data = request.get_json() or {}
+        text = data.get("text") or data.get("activity_text") or data.get("activity_type") or ""
+        quantity = data.get("quantity")
+        frequency = data.get("frequency")
+        unit = data.get("unit")
+
+        result = calculate_universal(text, quantity=quantity, frequency=frequency, unit=unit)
+        return jsonify({
+            "status": "success",
+            "calculation": result
+        })
+    except Exception as e:
+        return jsonify({"error": f"Universal calculation failed: {str(e)}"}), 500
+
 
 
 @app.route("/health")

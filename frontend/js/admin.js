@@ -2,11 +2,12 @@
  * CarbEarn Administrator Control Center Client
  * 
  * Manages platform governance:
- * - Real-time system overview analytics
- * - New tree registration audit (Verify as Correct or Mark as Incorrect)
- * - Periodic care inspection audit
- * - Campus user directory & search
- * - Live environmental activity ledger
+ * - Activity Authorization Queue (Audit & Mint Carbon Currency CBC)
+ * - Bulk Activity Authorization
+ * - Tree registration audits (Verify as Correct or Mark as Incorrect)
+ * - Periodic care inspection audits
+ * - Contributor directory & search
+ * - System-wide activity ledger
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -28,22 +29,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const refreshBtn = document.getElementById("refreshAdmin");
-    const adminMessage = document.getElementById("adminMessage");
     const userSearch = document.getElementById("userSearch");
 
     let allUsers = [];
+    let pendingActivities = [];
     let pendingTrees = [];
     let pendingCareLogs = [];
 
     // --- Tab Switching Logic ---
     const tabButtons = {
+        activity: document.getElementById("btnTabActivityQueue"),
         tree: document.getElementById("btnTabTreeQueue"),
         care: document.getElementById("btnTabCareQueue"),
         users: document.getElementById("btnTabUsers"),
+        admins: document.getElementById("btnTabAdmins"),
         activities: document.getElementById("btnTabActivities")
     };
 
     const sections = {
+        activity: document.getElementById("sectionActivityQueue"),
         tree: document.getElementById("sectionTreeQueue"),
         care: document.getElementById("sectionCareQueue"),
         users: document.getElementById("sectionUsers"),
@@ -77,9 +81,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    if (tabButtons.activity) tabButtons.activity.addEventListener("click", () => switchTab("activity"));
     if (tabButtons.tree) tabButtons.tree.addEventListener("click", () => switchTab("tree"));
     if (tabButtons.care) tabButtons.care.addEventListener("click", () => switchTab("care"));
     if (tabButtons.users) tabButtons.users.addEventListener("click", () => switchTab("users"));
+    if (tabButtons.admins) tabButtons.admins.addEventListener("click", () => switchTab("admins"));
     if (tabButtons.activities) tabButtons.activities.addEventListener("click", () => switchTab("activities"));
 
     // Navbar link tab routing
@@ -89,34 +95,52 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.querySelectorAll(".admin-tab-btn").forEach(l => l.classList.remove("active"));
             link.classList.add("active");
             const tab = link.getAttribute("data-tab");
-            if (tab === "tabTreeQueue") switchTab("tree");
+            if (tab === "tabActivityQueue") switchTab("activity");
+            else if (tab === "tabTreeQueue") switchTab("tree");
             else if (tab === "tabCareQueue") switchTab("care");
             else if (tab === "tabUsers") switchTab("users");
             else if (tab === "tabAdmins") switchTab("admins");
             else if (tab === "tabActivities") switchTab("activities");
-            else switchTab("tree");
+            else switchTab("activity");
         });
     });
 
+    // --- MODAL 0: Activity Authorization Modal Elements ---
+    const actModal = document.getElementById("activityReviewModal");
+    const closeActModal = document.getElementById("closeActReviewModal");
+    const cancelActBtn = document.getElementById("cancelActReviewBtn");
+    const actReviewForm = document.getElementById("activityReviewForm");
+    const targetActivityId = document.getElementById("targetActivityId");
+    const actReviewSummary = document.getElementById("actReviewSummary");
+    const actReviewDecision = document.getElementById("actReviewDecision");
+    const actReviewNotes = document.getElementById("actReviewNotes");
+
     // --- MODAL 1: Tree Verification Modal Elements ---
-    const treeModal = document.getElementById("treeReviewModal");
+    const treeModal = document.getElementById("treeVerifyModal");
     const closeTreeModal = document.getElementById("closeTreeModal");
-    const cancelTreeModalBtn = document.getElementById("cancelTreeModalBtn");
-    const reviewTreeForm = document.getElementById("reviewTreeForm");
-    const modalTreeId = document.getElementById("modalTreeId");
-    const treeModalDetails = document.getElementById("treeModalDetails");
-    const treeVerificationDecision = document.getElementById("treeVerificationDecision");
-    const treeAdminNotes = document.getElementById("treeAdminNotes");
+    const cancelTreeModalBtn = document.getElementById("cancelTreeAuditBtn");
+    const reviewTreeForm = document.getElementById("treeAuditForm");
+    const modalTreeId = document.getElementById("targetTreeId");
+    const treeModalDetails = document.getElementById("modalTreeSummary");
+    const treeVerificationDecision = document.getElementById("auditDecision");
+    const treeAdminNotes = document.getElementById("auditNotes");
 
     // --- MODAL 2: Care Inspection Modal Elements ---
-    const careModal = document.getElementById("reviewModal");
+    const careModal = document.getElementById("reviewLogModal");
     const closeCareModal = document.getElementById("closeReviewModal");
     const cancelCareModalBtn = document.getElementById("cancelReviewBtn");
-    const reviewCareForm = document.getElementById("reviewInspectionForm");
-    const modalLogId = document.getElementById("modalLogId");
-    const modalCareDetails = document.getElementById("modalInspectionDetails");
-    const reviewStatusSelect = document.getElementById("reviewStatusSelect");
-    const reviewNotesInput = document.getElementById("reviewNotesInput");
+    const reviewCareForm = document.getElementById("reviewLogForm");
+    const modalLogId = document.getElementById("targetLogId");
+    const modalCareDetails = document.getElementById("modalReviewSummary");
+    const reviewStatusSelect = document.getElementById("logVerificationStatus");
+    const reviewNotesInput = document.getElementById("logReviewNotes");
+
+    // --- MODAL 3: Admin Registration Modal Elements ---
+    const addAdminModal = document.getElementById("addAdminModal");
+    const openAddAdminBtn = document.getElementById("btnOpenAddAdminModal");
+    const closeAddAdminBtn = document.getElementById("closeAddAdminModal");
+    const cancelAddAdminBtn = document.getElementById("cancelAddAdminBtn");
+    const addAdminForm = document.getElementById("addAdminForm");
 
     // Initial load
     await refreshAll();
@@ -135,6 +159,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function refreshAll() {
         await Promise.allSettled([
             loadOverview(),
+            loadPendingActivities(),
             loadPendingTrees(),
             loadPendingCareLogs(),
             loadUsers(),
@@ -155,13 +180,37 @@ document.addEventListener("DOMContentLoaded", async () => {
             CarbEarn.animateValue(document.getElementById("totalCO2Saved"), 0, data.totalCO2Saved || 0);
             CarbEarn.animateValue(document.getElementById("totalTrees"), 0, data.totalTrees || 0);
 
+            const pendingActs = Number(data.pendingActivities || 0);
             const pendingReviews = Number(data.pendingReviews || 0);
             const pendingTreesCount = Number(data.pendingTrees || 0);
 
+            CarbEarn.animateValue(document.getElementById("pendingActivitiesCount"), 0, pendingActs);
             CarbEarn.animateValue(document.getElementById("pendingReviewsCount"), 0, pendingReviews);
             CarbEarn.animateValue(document.getElementById("pendingTreesCount"), 0, pendingTreesCount);
 
+            // Carbon Currency metrics
+            const cc = data.carbon_currency || {};
+            const mintedCBC = Number(cc.total_minted_cbc !== undefined ? cc.total_minted_cbc : data.totalCO2Saved || 0);
+            const fiatINR = Number(cc.fiat_inr !== undefined ? cc.fiat_inr : (mintedCBC * 2.50));
+
+            CarbEarn.animateValue(document.getElementById("totalMintedCBC"), 0, mintedCBC);
+            const fiatElem = document.getElementById("totalFiatINR");
+            if (fiatElem) {
+                fiatElem.textContent = `Valued at ~₹${fiatINR.toFixed(2)} INR`;
+            }
+
             // Badges in navbar
+            const actBadge = document.getElementById("pendingActivitiesBadge");
+            const actTabBadge = document.getElementById("pendingActivitiesTabBadge");
+            if (actBadge) {
+                actBadge.textContent = pendingActs;
+                actBadge.style.display = pendingActs > 0 ? "inline-block" : "none";
+            }
+            if (actTabBadge) {
+                actTabBadge.textContent = pendingActs;
+                actTabBadge.style.display = pendingActs > 0 ? "inline-block" : "none";
+            }
+
             const treeBadge = document.getElementById("pendingTreesBadge");
             if (treeBadge) {
                 treeBadge.textContent = pendingTreesCount;
@@ -179,7 +228,209 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // -------------------------------------------------------------------------
-    // 2. New Tree Verification Queue (Approve Correct / Mark Incorrect)
+    // 2. Activity Authorization Queue (CRITICAL USER REQUEST)
+    // -------------------------------------------------------------------------
+    async function loadPendingActivities() {
+        const container = document.getElementById("pendingActivitiesContainer");
+        try {
+            const data = await CarbEarn.get("/api/admin/pending-activities");
+            pendingActivities = data.activities || [];
+
+            if (pendingActivities.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state text-center" style="padding: 2.5rem 1rem;">
+                        <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">⚡</div>
+                        <p class="font-bold text-dark">No pending activities awaiting authorization.</p>
+                        <p class="text-sm text-medium">All student contributions have been audited and Carbon Currency minted.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Contributor</th>
+                                <th>Activity Details</th>
+                                <th>Volume & Frequency</th>
+                                <th>Avoided CO₂</th>
+                                <th>Mintable CBC</th>
+                                <th>Submission Date</th>
+                                <th style="text-align: right;">Authorization Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pendingActivities.map(act => {
+                                const cbcVal = Number(act.carbon_currency !== undefined ? act.carbon_currency : act.co2_saved).toFixed(3);
+                                return `
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: var(--slate-900);">${escapeHtml(act.student_name)}</div>
+                                            <div class="text-xs text-medium">${escapeHtml(act.student_college || act.student_email)}</div>
+                                        </td>
+                                        <td>
+                                            <strong style="color: var(--color-primary-deep);">${escapeHtml(act.activity_name)}</strong>
+                                            ${act.certificate_hash ? `<div class="hash-pill" style="font-size: 0.65rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px;">#${act.certificate_hash.substring(0, 16)}...</div>` : ""}
+                                        </td>
+                                        <td>
+                                            <strong>${act.quantity} ${escapeHtml(act.unit)}</strong>
+                                            <div class="text-xs text-light">${act.frequency}x / week</div>
+                                        </td>
+                                        <td>
+                                            <strong style="color: var(--emerald-800);">${Number(act.co2_saved).toFixed(2)} kg</strong>
+                                        </td>
+                                        <td>
+                                            <strong style="color: var(--emerald-600); font-size: 0.95rem;">+${cbcVal} CBC</strong>
+                                            <div class="text-xs text-light">~₹${(Number(cbcVal) * 2.50).toFixed(2)} INR</div>
+                                        </td>
+                                        <td>${formatDate(act.activity_date || act.created_at)}</td>
+                                        <td style="text-align: right; white-space: nowrap;">
+                                            <button type="button" class="btn btn-primary btn-sm authorize-act-btn" data-id="${act.id}" style="margin-right: 4px;">
+                                                ✓ Authorize & Mint
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm reject-act-btn" data-id="${act.id}">
+                                                ✕ Reject
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.querySelectorAll(".authorize-act-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const actId = Number(btn.getAttribute("data-id"));
+                    openActivityAuditModal(actId, "Verified");
+                });
+            });
+
+            container.querySelectorAll(".reject-act-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const actId = Number(btn.getAttribute("data-id"));
+                    openActivityAuditModal(actId, "Rejected");
+                });
+            });
+        } catch (e) {
+            console.error("Pending activities load error:", e);
+            container.innerHTML = `<div class="empty-state text-error">Unable to load pending activities: ${escapeHtml(e.message)}</div>`;
+        }
+    }
+
+    function openActivityAuditModal(actId, defaultDecision = "Verified") {
+        const act = pendingActivities.find(a => a.id === actId);
+        if (!act) return;
+
+        targetActivityId.value = actId;
+        actReviewDecision.value = defaultDecision;
+        actReviewNotes.value = defaultDecision === "Verified"
+            ? "Green activity calculation and evidence verified under campus sustainability guidelines."
+            : "Requires further verification or proof.";
+
+        const cbcAmount = Number(act.carbon_currency !== undefined ? act.carbon_currency : act.co2_saved).toFixed(3);
+
+        actReviewSummary.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div>
+                    <span class="text-xs text-light">Student Contributor:</span>
+                    <strong style="display: block;">${escapeHtml(act.student_name)}</strong>
+                </div>
+                <div>
+                    <span class="text-xs text-light">Green Action:</span>
+                    <strong style="display: block; color: var(--emerald-800);">${escapeHtml(act.activity_name)}</strong>
+                </div>
+                <div>
+                    <span class="text-xs text-light">Reported Volume:</span>
+                    <strong style="display: block;">${act.quantity} ${escapeHtml(act.unit)} (${act.frequency}x/wk)</strong>
+                </div>
+                <div>
+                    <span class="text-xs text-light">Avoided CO₂ / Mintable CBC:</span>
+                    <strong style="display: block; color: var(--emerald-600);">${Number(act.co2_saved).toFixed(2)} kg CO₂ → +${cbcAmount} CBC</strong>
+                </div>
+            </div>
+        `;
+
+        actModal.style.display = "flex";
+    }
+
+    function closeActivityModalDialog() {
+        actModal.style.display = "none";
+        actReviewForm.reset();
+    }
+
+    if (closeActModal) closeActModal.addEventListener("click", closeActivityModalDialog);
+    if (cancelActBtn) cancelActBtn.addEventListener("click", closeActivityModalDialog);
+
+    if (actReviewForm) {
+        actReviewForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const actId = targetActivityId.value;
+            const status = actReviewDecision.value;
+            const review_notes = actReviewNotes.value.trim();
+
+            const submitBtn = document.getElementById("submitActReviewBtn");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Processing...";
+
+            try {
+                const res = await CarbEarn.put(`/api/admin/activities/${actId}/verify`, {
+                    status,
+                    review_notes
+                });
+
+                closeActivityModalDialog();
+                if (status === "Verified") {
+                    CarbEarn.showToast(`Activity authorized! +${res.carbon_currency.toFixed(2)} CBC minted to student.`, "success");
+                } else {
+                    CarbEarn.showToast("Activity rejected with audit feedback note.", "info");
+                }
+
+                await Promise.all([
+                    loadOverview(),
+                    loadPendingActivities()
+                ]);
+            } catch (err) {
+                CarbEarn.showToast(err.message || "Failed to save authorization decision", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Save Decision & Update Currency";
+            }
+        });
+    }
+
+    // Bulk Authorize All Pending Activities
+    const btnBulkAuthorize = document.getElementById("btnBulkAuthorizeActivities");
+    if (btnBulkAuthorize) {
+        btnBulkAuthorize.addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to bulk authorize all pending activities and mint their Carbon Currency?")) {
+                return;
+            }
+
+            btnBulkAuthorize.disabled = true;
+            btnBulkAuthorize.textContent = "Authorizing...";
+
+            try {
+                const res = await CarbEarn.post("/api/admin/activities/batch-verify", {});
+                CarbEarn.showToast(`Bulk authorization complete! ${res.authorized_count} activities approved and minted.`, "success");
+                await Promise.all([
+                    loadOverview(),
+                    loadPendingActivities()
+                ]);
+            } catch (err) {
+                CarbEarn.showToast(err.message || "Bulk authorization failed", "error");
+            } finally {
+                btnBulkAuthorize.disabled = false;
+                btnBulkAuthorize.textContent = "⚡ Bulk Authorize All Pending";
+            }
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. New Tree Verification Queue (Approve Correct / Mark Incorrect)
     // -------------------------------------------------------------------------
     async function loadPendingTrees() {
         const container = document.getElementById("pendingTreesContainer");
@@ -220,29 +471,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                                         <div class="text-xs text-medium">${escapeHtml(t.student_college || t.student_email)}</div>
                                     </td>
                                     <td>
-                                        <strong style="color: var(--emerald-800);">${escapeHtml(t.species)}</strong>
+                                        <strong style="color: var(--color-primary-deep);">${escapeHtml(t.species)}</strong>
                                     </td>
+                                    <td>📍 ${escapeHtml(t.location)}</td>
+                                    <td>${formatDate(t.planting_date)}</td>
+                                    <td>${escapeHtml(t.notes || "—")}</td>
                                     <td>
-                                        <span class="text-sm">📍 ${escapeHtml(t.location)}</span>
-                                    </td>
-                                    <td>
-                                        <span class="text-sm">${formatDate(t.planting_date)}</span>
-                                    </td>
-                                    <td>
-                                        <span class="text-xs text-medium">${escapeHtml(t.notes || "No notes provided")}</span>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge badge-pending">⏳ Pending Audit</span>
+                                        <span class="status-badge badge-pending">Pending Review</span>
                                     </td>
                                     <td style="text-align: right;">
-                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                            <button type="button" class="btn btn-primary btn-sm btn-verify-tree" data-id="${t.tree_id}" data-action="Verified">
-                                                ✓ Verify (Correct)
-                                            </button>
-                                            <button type="button" class="btn btn-secondary btn-sm btn-verify-tree" data-id="${t.tree_id}" data-action="Rejected" style="color: var(--color-danger); border-color: rgba(239, 68, 68, 0.4);">
-                                                ✕ Incorrect
-                                            </button>
-                                        </div>
+                                        <button type="button" class="btn btn-primary btn-sm verify-tree-btn" data-id="${t.tree_id || t.id}">
+                                            Audit Sapling
+                                        </button>
                                     </td>
                                 </tr>
                             `).join("")}
@@ -251,12 +491,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>
             `;
 
-            // Bind click handlers to verification buttons
-            container.querySelectorAll(".btn-verify-tree").forEach(btn => {
+            container.querySelectorAll(".verify-tree-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const treeId = Number(btn.getAttribute("data-id"));
-                    const initialDecision = btn.getAttribute("data-action");
-                    openTreeReviewModal(treeId, initialDecision);
+                    openTreeModal(treeId);
                 });
             });
         } catch (e) {
@@ -265,24 +503,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    function openTreeReviewModal(treeId, initialDecision = "Verified") {
-        const tree = pendingTrees.find(t => t.tree_id === treeId);
+    function openTreeModal(treeId) {
+        const tree = pendingTrees.find(t => (t.tree_id || t.id) === treeId);
         if (!tree) return;
 
         modalTreeId.value = treeId;
-        treeVerificationDecision.value = initialDecision;
-        treeAdminNotes.value = initialDecision === "Verified" 
-            ? "Ground inspection confirms valid sapling planting at designated campus location." 
-            : "Submission details could not be verified or location is not recognized.";
+        treeVerificationDecision.value = "Verified";
+        treeAdminNotes.value = "Sapling species and site coordinates audited during campus walk.";
 
         treeModalDetails.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                 <div>
                     <span class="text-xs text-light">Contributor:</span>
-                    <strong style="display: block;">${escapeHtml(tree.student_name)} (${escapeHtml(tree.student_college || "")})</strong>
+                    <strong style="display: block;">${escapeHtml(tree.student_name)}</strong>
                 </div>
                 <div>
-                    <span class="text-xs text-light">Species:</span>
+                    <span class="text-xs text-light">Sapling Species:</span>
                     <strong style="display: block; color: var(--emerald-800);">${escapeHtml(tree.species)}</strong>
                 </div>
                 <div>
@@ -294,7 +530,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <strong style="display: block;">${formatDate(tree.planting_date)}</strong>
                 </div>
             </div>
-            ${tree.notes ? `<div style="margin-top: 0.75rem; border-top: 1px dashed var(--slate-200); padding-top: 0.5rem;"><span class="text-xs text-light">Contributor Notes:</span> <span class="text-xs">${escapeHtml(tree.notes)}</span></div>` : ""}
         `;
 
         treeModal.style.display = "flex";
@@ -312,7 +547,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         reviewTreeForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const treeId = modalTreeId.value;
-            const verification_status = treeVerificationDecision.value;
+            const rawStatus = treeVerificationDecision.value;
+            const verification_status = (rawStatus === "Correct" || rawStatus === "Verified") ? "Verified" : "Rejected";
             const admin_notes = treeAdminNotes.value.trim();
 
             const submitBtn = document.getElementById("submitTreeDecisionBtn");
@@ -320,13 +556,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             submitBtn.textContent = "Saving...";
 
             try {
-                const res = await CarbEarn.put(`/api/greenproof/admin/trees/${treeId}/review`, {
+                await CarbEarn.put(`/api/greenproof/admin/trees/${treeId}/review`, {
                     verification_status,
                     admin_notes
                 });
 
                 closeTreeModalDialog();
-                if (verification_status === "Verified") {
+                if (verification_status === "Correct" || verification_status === "Verified") {
                     CarbEarn.showToast("Tree verified as Correct! +50 Points awarded to contributor.", "success");
                 } else {
                     CarbEarn.showToast("Tree registration marked as Incorrect.", "info");
@@ -340,13 +576,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 CarbEarn.showToast(err.message || "Failed to record tree decision", "error");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Confirm Verification";
+                submitBtn.textContent = "Confirm Decision";
             }
         });
     }
 
     // -------------------------------------------------------------------------
-    // 3. Care Inspection Reviews Queue
+    // 4. Care Inspection Reviews Queue
     // -------------------------------------------------------------------------
     async function loadPendingCareLogs() {
         const container = document.getElementById("pendingReviewsContainer");
@@ -450,8 +686,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <strong style="display: block;">${formatDate(log.inspection_date)}</strong>
                 </div>
             </div>
-            ${log.notes ? `<div style="margin-top: 0.75rem; border-top: 1px dashed var(--slate-200); padding-top: 0.5rem;"><span class="text-xs text-light">Notes:</span> <span class="text-xs">${escapeHtml(log.notes)}</span></div>` : ""}
-            ${log.evidence_url ? `<div style="margin-top: 0.5rem;"><a href="${escapeHtml(log.evidence_url)}" target="_blank" rel="noopener noreferrer" class="text-xs text-primary">🔗 Open Photographic Evidence URL</a></div>` : ""}
         `;
 
         careModal.style.display = "flex";
@@ -465,20 +699,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (closeCareModal) closeCareModal.addEventListener("click", closeCareModalDialog);
     if (cancelCareModalBtn) cancelCareModalBtn.addEventListener("click", closeCareModalDialog);
 
-    if (reviewStatusSelect) {
-        reviewStatusSelect.addEventListener("change", () => {
-            if (reviewStatusSelect.value === "Rejected") {
-                if (reviewNotesInput.value === "Inspection observations and health confirmed from evidence.") {
-                    reviewNotesInput.value = "Inspection observations could not be verified or evidence is insufficient.";
-                }
-            } else if (reviewStatusSelect.value === "Verified") {
-                if (reviewNotesInput.value === "Inspection observations could not be verified or evidence is insufficient.") {
-                    reviewNotesInput.value = "Inspection observations and health confirmed from evidence.";
-                }
-            }
-        });
-    }
-
     if (reviewCareForm) {
         reviewCareForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -486,229 +706,196 @@ document.addEventListener("DOMContentLoaded", async () => {
             const verification_status = reviewStatusSelect.value;
             const review_notes = reviewNotesInput.value.trim();
 
-            const submitBtn = document.getElementById("submitReviewDecisionBtn") || reviewCareForm.querySelector("button[type='submit']");
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = "Saving...";
-            }
+            const submitBtn = document.getElementById("submitReviewDecisionBtn");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Saving...";
 
             try {
-                await CarbEarn.put(`/api/greenproof/admin/care/${logId}/review`, {
+                await CarbEarn.put(`/api/greenproof/admin/logs/${logId}/review`, {
                     verification_status,
                     review_notes
                 });
 
                 closeCareModalDialog();
                 if (verification_status === "Verified") {
-                    CarbEarn.showToast("Care inspection verified! +25 Points awarded.", "success");
+                    CarbEarn.showToast("Care log verified! +25 Stewardship points awarded.", "success");
                 } else {
-                    CarbEarn.showToast("Care inspection marked as Rejected.", "info");
+                    CarbEarn.showToast("Care log marked as Rejected.", "info");
                 }
 
-                await Promise.allSettled([
+                await Promise.all([
                     loadOverview(),
-                    loadPendingCareLogs(),
-                    loadUsers(),
-                    loadRecentActivities()
+                    loadPendingCareLogs()
                 ]);
             } catch (err) {
-                console.error("Save care review error:", err);
-                CarbEarn.showToast(err.message || "Failed to record decision", "error");
+                CarbEarn.showToast(err.message || "Failed to submit review", "error");
             } finally {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "Save Decision";
-                }
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Save Decision";
             }
         });
     }
 
     // -------------------------------------------------------------------------
-    // 4. Contributor Directory
+    // 5. Contributor Directory
     // -------------------------------------------------------------------------
     async function loadUsers() {
-        const tbody = document.getElementById("usersTableBody");
+        const container = document.getElementById("usersTableContainer");
         try {
-            allUsers = await CarbEarn.get("/api/admin/users?limit=100");
+            const data = await CarbEarn.get("/api/admin/users?limit=100");
+            allUsers = data || [];
             renderUsers(allUsers);
         } catch (e) {
-            console.error("Users error:", e);
-            tbody.innerHTML = `<tr><td colspan="7" class="text-error text-center">Unable to load users: ${escapeHtml(e.message)}</td></tr>`;
+            console.error("Users load error:", e);
+            container.innerHTML = `<div class="empty-state text-error">Unable to load contributors: ${escapeHtml(e.message)}</div>`;
         }
     }
 
     function renderUsers(users) {
-        const tbody = document.getElementById("usersTableBody");
+        const container = document.getElementById("usersTableContainer");
         if (!users || users.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-medium" style="padding: 2rem;">No registered contributors found.</td></tr>`;
+            container.innerHTML = `<div class="empty-state text-center" style="padding: 2rem;">No matching contributors found.</div>`;
             return;
         }
 
-        tbody.innerHTML = users.map(u => `
-            <tr>
-                <td>
-                    <div style="font-weight: 700; color: var(--slate-900);">${escapeHtml(u.name)}</div>
-                    <div class="text-xs text-medium">${escapeHtml(u.email)}</div>
-                </td>
-                <td>${escapeHtml(u.college || "Campus Community")}</td>
-                <td>
-                    <span class="status-badge ${u.role === "ADMIN" ? "badge-primary" : "badge-active"}">
-                        ${u.role}
-                    </span>
-                </td>
-                <td><strong>${u.activity_count}</strong> actions</td>
-                <td><strong>${Number(u.total_co2).toFixed(2)}</strong> kg</td>
-                <td><strong class="text-primary">+${Number(u.total_points).toLocaleString()}</strong> pts</td>
-                <td class="text-xs text-light">${formatDate(u.created_at)}</td>
-            </tr>
-        `).join("");
+        container.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Contributor</th>
+                        <th>Institution</th>
+                        <th>Activities</th>
+                        <th>Avoided CO₂</th>
+                        <th>Carbon Currency</th>
+                        <th>Carbon Points</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(u => `
+                        <tr>
+                            <td>
+                                <strong style="color: var(--slate-900);">${escapeHtml(u.name)}</strong>
+                                <div class="text-xs text-medium">${escapeHtml(u.email)}</div>
+                            </td>
+                            <td>${escapeHtml(u.college || "—")}</td>
+                            <td>${u.activity_count || 0}</td>
+                            <td><strong>${Number(u.total_co2 || 0).toFixed(2)} kg</strong></td>
+                            <td><strong style="color: var(--emerald-600);">${Number(u.carbon_currency !== undefined ? u.carbon_currency : u.total_co2 || 0).toFixed(2)} CBC</strong></td>
+                            <td><span class="badge badge-accent">+${u.total_points || 0}</span></td>
+                            <td>${formatDate(u.created_at)}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        `;
     }
 
     if (userSearch) {
         userSearch.addEventListener("input", () => {
-            const q = userSearch.value.trim().toLowerCase();
+            const term = userSearch.value.toLowerCase().trim();
+            if (!term) {
+                renderUsers(allUsers);
+                return;
+            }
             const filtered = allUsers.filter(u =>
-                (u.name && u.name.toLowerCase().includes(q)) ||
-                (u.email && u.email.toLowerCase().includes(q)) ||
-                (u.college && u.college.toLowerCase().includes(q))
+                (u.name || "").toLowerCase().includes(term) ||
+                (u.email || "").toLowerCase().includes(term) ||
+                (u.college || "").toLowerCase().includes(term)
             );
             renderUsers(filtered);
         });
     }
 
     // -------------------------------------------------------------------------
-    // 5. Recent Activity Ledger
-    // -------------------------------------------------------------------------
-    async function loadRecentActivities() {
-        const tbody = document.getElementById("activitiesTableBody");
-        try {
-            const activities = await CarbEarn.get("/api/admin/activities");
-            if (!activities || activities.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-medium" style="padding: 2rem;">No activities logged yet.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = activities.map(act => {
-                const impactClass = (act.impact || "low").toLowerCase();
-                return `
-                    <tr>
-                        <td><strong>${escapeHtml(act.user_name)}</strong></td>
-                        <td>${escapeHtml(act.activity_name)}</td>
-                        <td>${act.quantity} ${escapeHtml(act.unit)} (${act.frequency}x/wk)</td>
-                        <td><strong>${Number(act.co2_saved).toFixed(2)}</strong> kg</td>
-                        <td class="text-primary"><strong>+${act.points}</strong></td>
-                        <td><span class="status-badge badge-${impactClass}">${act.impact}</span></td>
-                        <td class="text-xs text-light">${formatDate(act.activity_date)}</td>
-                    </tr>
-                `;
-            }).join("");
-        } catch (e) {
-            console.error("Activities error:", e);
-            tbody.innerHTML = `<tr><td colspan="7" class="text-error text-center">Unable to load recent activities: ${escapeHtml(e.message)}</td></tr>`;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // 6. Platform Administrators Directory & Registration
+    // 6. Administrator Directory & Registration Modal
     // -------------------------------------------------------------------------
     async function loadAdmins() {
-        const tbody = document.getElementById("adminsTableBody");
-        if (!tbody) return;
+        const container = document.getElementById("adminListContainer");
         try {
-            const admins = await CarbEarn.get("/api/admin/admins");
-            if (!admins || admins.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-medium" style="padding: 2rem;">No platform administrators found.</td></tr>`;
-                return;
-            }
+            const data = await CarbEarn.get("/api/admin/admins");
+            const admins = data || [];
 
-            tbody.innerHTML = admins.map(a => `
-                <tr>
-                    <td>
-                        <div style="font-weight: 700; color: var(--slate-900);">${escapeHtml(a.name)}</div>
-                    </td>
-                    <td>${escapeHtml(a.email)}</td>
-                    <td>${escapeHtml(a.college || "CarbEarn Platform Administration")}</td>
-                    <td>
-                        <span class="status-badge badge-primary">
-                            🛡️ ${escapeHtml(a.role)}
-                        </span>
-                    </td>
-                    <td class="text-xs text-light">${formatDate(a.created_at)}</td>
-                </tr>
-            `).join("");
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Administrator Name</th>
+                            <th>Official Email</th>
+                            <th>Department</th>
+                            <th>Role</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${admins.map(a => `
+                            <tr>
+                                <td>
+                                    <strong style="color: var(--slate-900);">${escapeHtml(a.name)}</strong>
+                                </td>
+                                <td>${escapeHtml(a.email)}</td>
+                                <td>${escapeHtml(a.college || "Administration")}</td>
+                                <td><span class="badge badge-accent">PLATFORM ADMIN</span></td>
+                                <td>${formatDate(a.created_at)}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            `;
         } catch (e) {
-            console.error("Admins error:", e);
-            tbody.innerHTML = `<tr><td colspan="5" class="text-error text-center">Unable to load administrators: ${escapeHtml(e.message)}</td></tr>`;
+            console.error("Admins load error:", e);
+            container.innerHTML = `<div class="empty-state text-error">Unable to load administrators: ${escapeHtml(e.message)}</div>`;
         }
     }
 
-    const addAdminModal = document.getElementById("addAdminModal");
-    const openAddAdminModalBtn = document.getElementById("openAddAdminModalBtn");
-    const closeAddAdminModal = document.getElementById("closeAddAdminModal");
-    const cancelAddAdminBtn = document.getElementById("cancelAddAdminBtn");
-    const addAdminForm = document.getElementById("addAdminForm");
-    const adminCreateMsg = document.getElementById("adminCreateMsg");
-
-    function openAdminModal() {
-        if (addAdminModal) {
+    if (openAddAdminBtn && addAdminModal) {
+        openAddAdminBtn.addEventListener("click", () => {
             addAdminModal.style.display = "flex";
-            if (adminCreateMsg) {
-                adminCreateMsg.style.display = "none";
-                adminCreateMsg.textContent = "";
-            }
-            document.getElementById("newAdminName")?.focus();
-        }
+        });
     }
 
-    function closeAdminModal() {
+    function closeAddAdminDialog() {
         if (addAdminModal) {
             addAdminModal.style.display = "none";
-            addAdminForm?.reset();
+            addAdminForm.reset();
+            const msg = document.getElementById("adminCreateMsg");
+            if (msg) msg.style.display = "none";
         }
     }
 
-    if (openAddAdminModalBtn) openAddAdminModalBtn.addEventListener("click", openAdminModal);
-    if (closeAddAdminModal) closeAddAdminModal.addEventListener("click", closeAdminModal);
-    if (cancelAddAdminBtn) cancelAddAdminBtn.addEventListener("click", closeAdminModal);
+    if (closeAddAdminBtn) closeAddAdminBtn.addEventListener("click", closeAddAdminDialog);
+    if (cancelAddAdminBtn) cancelAddAdminBtn.addEventListener("click", closeAddAdminDialog);
 
     if (addAdminForm) {
         addAdminForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const name = document.getElementById("newAdminName").value.trim();
-            const email = document.getElementById("newAdminEmail").value.trim().toLowerCase();
+            const email = document.getElementById("newAdminEmail").value.trim();
             const password = document.getElementById("newAdminPassword").value;
             const college = document.getElementById("newAdminCollege").value.trim();
+            const msg = document.getElementById("adminCreateMsg");
             const submitBtn = document.getElementById("submitAddAdminBtn");
-
-            if (!name || !email || !password) {
-                if (adminCreateMsg) {
-                    adminCreateMsg.textContent = "Please provide name, email, and password.";
-                    adminCreateMsg.className = "form-message error mb-md";
-                    adminCreateMsg.style.display = "block";
-                }
-                return;
-            }
 
             submitBtn.disabled = true;
             submitBtn.textContent = "Registering...";
 
             try {
-                const res = await CarbEarn.post("/api/admin/create-admin", {
+                await CarbEarn.post("/api/admin/create-admin", {
                     name,
                     email,
                     password,
                     college
                 });
-                CarbEarn.showToast(res.message || "New administrator created successfully!", "success");
-                closeAdminModal();
+
+                closeAddAdminDialog();
+                CarbEarn.showToast("New platform administrator registered successfully!", "success");
                 await loadAdmins();
             } catch (err) {
-                if (adminCreateMsg) {
-                    adminCreateMsg.textContent = err.message || "Failed to create administrator.";
-                    adminCreateMsg.className = "form-message error mb-md";
-                    adminCreateMsg.style.display = "block";
+                if (msg) {
+                    msg.textContent = err.message || "Failed to register administrator.";
+                    msg.className = "form-message error";
+                    msg.style.display = "block";
                 }
-                CarbEarn.showToast(err.message || "Failed to create administrator", "error");
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Create Administrator";
@@ -716,15 +903,77 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // --- Helpers ---
+    // -------------------------------------------------------------------------
+    // 7. Recent Activities Feed
+    // -------------------------------------------------------------------------
+    async function loadRecentActivities() {
+        const container = document.getElementById("adminActivitiesContainer");
+        try {
+            const data = await CarbEarn.get("/api/admin/activities");
+            const activities = data || [];
+
+            if (activities.length === 0) {
+                container.innerHTML = `<div class="empty-state text-center" style="padding: 2rem;">No activities recorded yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Contributor</th>
+                                <th>Activity</th>
+                                <th>Volume</th>
+                                <th>Mitigated CO₂</th>
+                                <th>Carbon Currency</th>
+                                <th>Points</th>
+                                <th>Authorization</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activities.map(act => {
+                                const isVerified = act.verification_status === "Verified";
+                                const statusPill = isVerified
+                                    ? `<span class="status-badge badge-verified">✓ Authorized</span>`
+                                    : `<span class="status-badge badge-pending">⏳ Pending Audit</span>`;
+                                const cbc = Number(act.carbon_currency !== undefined ? act.carbon_currency : act.co2_saved).toFixed(2);
+
+                                return `
+                                    <tr>
+                                        <td>
+                                            <strong>${escapeHtml(act.user_name || "Contributor")}</strong>
+                                            <div class="text-xs text-medium">${escapeHtml(act.user_email || "")}</div>
+                                        </td>
+                                        <td><strong>${escapeHtml(act.activity_name)}</strong></td>
+                                        <td>${act.quantity} ${escapeHtml(act.unit || "unit")} (${act.frequency}x/wk)</td>
+                                        <td><strong style="color: var(--emerald-800);">${Number(act.co2_saved).toFixed(2)} kg</strong></td>
+                                        <td><strong style="color: var(--emerald-600);">+${cbc} CBC</strong></td>
+                                        <td><span class="badge badge-accent">+${act.points}</span></td>
+                                        <td>${statusPill}</td>
+                                        <td>${formatDate(act.activity_date || act.created_at)}</td>
+                                    </tr>
+                                `;
+                            }).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } catch (e) {
+            console.error("Recent activities error:", e);
+            container.innerHTML = `<div class="empty-state text-error">Unable to load recent activities: ${escapeHtml(e.message)}</div>`;
+        }
+    }
+
     function formatDate(dateStr) {
         if (!dateStr) return "—";
-        try {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-        } catch {
-            return dateStr;
-        }
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString("en-IN", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+        });
     }
 
     function escapeHtml(str) {
@@ -733,7 +982,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(/"/g, "&quot;");
     }
 });
